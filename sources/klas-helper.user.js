@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         KLAS Helper
 // @namespace    https://github.com/nbsp1221
-// @version      1.0.0
-// @description  광운대학교 KLAS 서비스에 편리한 기능을 추가할 수 있는 유저 스크립트
+// @version      1.0.1
+// @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @match        https://klas.kw.ac.kr/*
 // @run-at       document-end
 // @homepageURL  https://github.com/nbsp1221/klas-helper
