@@ -70,6 +70,135 @@
 
 			// 렌더링
 			document.querySelector('table:nth-of-type(1) tr:nth-of-type(4) td').innerText = '인증 코드를 입력하실 필요가 없습니다.';
+		},
+		// 수강 및 성적 조회
+		'/std/cps/inqire/AtnlcScreStdPage.do': () => {
+			let gradePointChanger = {
+				'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'NP': 0
+			};
+
+			// 평점 계산
+			appModule.$watch('sungjuk', function (newVal, oldVal) {
+				let htmlCode = '';
+				let trCode = '';
+
+				for (let i = newVal.length - 1; i >= 0; i--) {
+					let year = newVal[i].thisYear;
+					let semester = newVal[i].hakgi;
+
+					// 상황별 점수 정보
+					let sumScore = 0, sumScoreF = 0;
+					let sumCredit = 0, sumCreditF = 0;
+					let sumMajorScore = 0, sumMajorScoreF = 0;
+					let sumMajorCredit = 0, sumMajorCreditF = 0;
+					let sumNotMajorScore = 0, sumNotMajorScoreF = 0;
+					let sumNotMajorCredit = 0, sumNotMajorCreditF = 0;
+
+					// 계절 학기의 경우 계산에서 제외
+					if (semester > 2) {
+						continue;
+					}
+
+					for (let j = 0; j < newVal[i].sungjukList.length; j++) {
+						let codeName = newVal[i].sungjukList[j].codeName1.trim();
+						let credit = parseInt(newVal[i].sungjukList[j].hakjumNum);
+						let gradePoint = newVal[i].sungjukList[j].getGrade.trim();
+
+						// P와 R 학점은 계산에서 제외
+						if (!(gradePoint in gradePointChanger)) {
+							continue;
+						}
+
+						// 전공 평점 계산
+						if (codeName[0] === '전') {
+							if (gradePoint !== 'F' || gradePoint !== 'NP') {
+								sumMajorScore += credit * gradePointChanger[gradePoint];
+								sumMajorCredit += credit;
+							}
+
+							sumMajorScoreF += credit * gradePointChanger[gradePoint];
+							sumMajorCreditF += credit;
+						}
+						// 전공 외 평점 계산
+						else {
+							if (gradePoint !== 'F' || gradePoint !== 'NP') {
+								sumNotMajorScore += credit * gradePointChanger[gradePoint];
+								sumNotMajorCredit += credit;
+							}
+
+							sumNotMajorScoreF += credit * gradePointChanger[gradePoint];
+							sumNotMajorCreditF += credit;
+						}
+
+						// 평균 평점 계산
+						if (gradePoint !== 'F' || gradePoint !== 'NP') {
+							sumScore += credit * gradePointChanger[gradePoint];
+							sumCredit += credit;
+						}
+
+						sumScoreF += credit * gradePointChanger[gradePoint];
+						sumCreditF += credit;
+					}
+
+					trCode +=
+						`<tr>` +
+						`	<td>${year}학년도 ${semester}학기</td>` +
+						`	<td>${sumCredit}</td>` +
+						`	<td>${sumMajorCreditF === 0 ? '-' : floorFixed(sumMajorScoreF / sumMajorCreditF)}</td>` +
+						`	<td>${sumMajorCredit === 0 ? '-' : floorFixed(sumMajorScore / sumMajorCredit)}</td>` +
+						`	<td>${sumNotMajorCreditF === 0 ? '-' : floorFixed(sumNotMajorScoreF / sumNotMajorCreditF)}</td>` +
+						`	<td>${sumNotMajorCredit === 0 ? '-' : floorFixed(sumNotMajorScore / sumNotMajorCredit)}</td>` +
+						`	<td>${sumCreditF === 0 ? '-' : floorFixed(sumScoreF / sumCreditF)}</td>` +
+						`	<td>${sumCredit === 0 ? '-' : floorFixed(sumScore / sumCredit)}</td>` +
+						`</tr>`;
+				}
+
+				htmlCode +=
+					`<table class="tablegw">` +
+					`	<colgroup>` +
+					`		<col width="25%">` +
+					`		<col width="15%">` +
+					`		<col width="10%">` +
+					`		<col width="10%">` +
+					`		<col width="10%">` +
+					`		<col width="10%">` +
+					`		<col width="10%">` +
+					`		<col width="10%">` +
+					`	</colgroup>` +
+					`	<thead>` +
+					`		<tr>` +
+					`			<th rowspan="2">학기</th>` +
+					`			<th rowspan="2">취득 학점</th>` +
+					`			<th colspan="2">전공 평점</th>` +
+					`			<th colspan="2">전공 외 평점</th>` +
+					`			<th colspan="2">평균 평점</th>` +
+					`		</tr>` +
+					`		<tr>` +
+					`			<th>F 포함</th>` +
+					`			<th>미포함</th>` +
+					`			<th>F 포함</th>` +
+					`			<th>미포함</th>` +
+					`			<th>F 포함</th>` +
+					`			<th>미포함</th>` +
+					`		</tr>` +
+					`	</thead>` +
+					`	<tbody>` +
+							trCode +
+					`	</tbody>` +
+					`</table>`;
+
+				// 렌더링
+				let tableList = document.querySelectorAll('#hakbu > table');
+				let divElement = document.createElement('div');
+				divElement.innerHTML = `<br>${htmlCode}<br>`;
+
+				for (let i = 0; i < tableList.length; i++) {
+					if (parseInt(tableList[i].getAttribute('width')) === 750) {
+						tableList[i].before(divElement);
+						break;
+					}
+				}
+			});
 		}
 	};
 
@@ -77,6 +206,12 @@
 		if (path === location.pathname) pathFunctions[path]();
 	}
 })();
+
+// 소수점 버림 함수
+function floorFixed(number, decimalPlace = 2) {
+	let pow10 = 10 ** decimalPlace;
+	return (Math.floor(number * pow10) / pow10).toFixed(decimalPlace);
+}
 
 // 새 창으로 열기
 function openLinkNewWindow(url, getDatas = null, specs = null) {
