@@ -85,6 +85,7 @@
 				for (let i = newVal.length - 1; i >= 0; i--) {
 					let year = newVal[i].thisYear;
 					let semester = newVal[i].hakgi;
+					let earnedCredits = 0;
 
 					// 상황별 점수 정보
 					let sumScore = 0, sumScoreF = 0;
@@ -104,10 +105,14 @@
 						let credit = parseInt(newVal[i].sungjukList[j].hakjumNum);
 						let gradePoint = newVal[i].sungjukList[j].getGrade.trim();
 
-						// P와 R 학점은 계산에서 제외
+						// P와 R 학점의 경우
 						if (!(gradePoint in gradePointChanger)) {
+							if (gradePoint === 'P') earnedCredits += credit;
 							continue;
 						}
+
+						// 취득 학점 계산
+						earnedCredits += credit;
 
 						// 전공 평점 계산
 						if (codeName[0] === '전') {
@@ -143,7 +148,7 @@
 					trCode +=
 						`<tr>` +
 						`	<td>${year}학년도 ${semester}학기</td>` +
-						`	<td>${sumCredit}</td>` +
+						`	<td>${earnedCredits}</td>` +
 						`	<td>${sumMajorCreditF === 0 ? '-' : floorFixed(sumMajorScoreF / sumMajorCreditF)}</td>` +
 						`	<td>${sumMajorCredit === 0 ? '-' : floorFixed(sumMajorScore / sumMajorCredit)}</td>` +
 						`	<td>${sumNotMajorCreditF === 0 ? '-' : floorFixed(sumNotMajorScoreF / sumNotMajorCreditF)}</td>` +
