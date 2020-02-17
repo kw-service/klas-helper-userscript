@@ -12,7 +12,7 @@
 ## 설치
 
 1. [Chrome 웹 스토어](https://chrome.google.com/webstore/search/tampermonkey)에 들어가서 Tampermonkey 확장 프로그램을 설치합니다.
-2. https://openuserjs.org/scripts/nbsp1221/KLAS_Helper 링크로 접속한 뒤 'Install' 버튼을 클릭합니다.
+2. https://openuserjs.org/scripts/nbsp1221/KLAS_Helper 링크로 접속한 뒤 Install 버튼을 클릭합니다.
 3. 새로 뜬 Tampermonkey 창에서 설치를 계속 진행합니다.
 4. 설치가 완료되면 자동으로 기능이 적용되니 KLAS 사이트에 접속해서 바로 사용하시면 됩니다.
 
@@ -21,10 +21,10 @@
 기본적으로 업데이트는 자동으로 진행되기 때문에 굳이 수동으로 하실 필요는 없습니다.
 
 1. 우측 상단의 Tampermonkey 아이콘을 클릭합니다.
-2. '유저 스크립트 업데이트 확인' 버튼을 눌러 업데이트를 진행합니다.
+2. 유저 스크립트 업데이트 확인 버튼을 눌러 업데이트를 진행합니다.
 
 ## 해제
 
 1. 먼저 KLAS 사이트에 접속합니다.
 2. 우측 상단의 Tampermonkey 아이콘을 클릭합니다.
-3. 'KLAS Helper' 활성화 버튼을 눌러 해제와 적용을 반복할 수 있습니다.
+3. KLAS Helper 활성화 버튼을 눌러 해제와 적용을 반복할 수 있습니다.
