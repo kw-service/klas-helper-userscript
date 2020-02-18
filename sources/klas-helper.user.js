@@ -24,7 +24,7 @@
 				this.selectYearHakgi = this.selectYear + ',' + this.selecthakgi;
 
 				// 모든 강의 계획서 검색은 서버 부하 문제로 방지
-				if (this.selectText === '' && this.selectProfsr === '' && this.selecthakgwa === '') {
+				if (this.selectRadio === 'all' && this.selectText === '' && this.selectProfsr === '' && this.selecthakgwa === '') {
 					alert('과목명 또는 담당 교수를 입력하지 않은 경우 반드시 학과를 선택하셔야 합니다.');
 					return false;
 				}
