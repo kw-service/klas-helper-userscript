@@ -118,7 +118,9 @@
 						}
 
 						// 취득 학점 계산
-						earnedCredits += credit;
+						if (gradePoint !== 'F' || gradePoint !== 'NP') {
+							earnedCredits += credit;
+						}
 
 						// 전공 평점 계산
 						if (codeName[0] === '전') {
