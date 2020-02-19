@@ -206,7 +206,7 @@
 				divElement.innerHTML = `<br>${htmlCode}<br>`;
 
 				for (let i = 0; i < tableList.length; i++) {
-					if (parseInt(tableList[i].getAttribute('width')) === 750) {
+					if (parseInt(tableList[i].getAttribute('width')) === 100) {
 						tableList[i].before(divElement);
 						break;
 					}
