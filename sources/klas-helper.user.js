@@ -202,8 +202,7 @@
 
 				// 렌더링
 				let tableList = document.querySelectorAll('#hakbu > table');
-				let divElement = document.createElement('div');
-				divElement.innerHTML = `<br>${htmlCode}<br>`;
+				let divElement = createTag('div', `<br>${htmlCode}<br>`);
 
 				for (let i = 0; i < tableList.length; i++) {
 					if (parseInt(tableList[i].getAttribute('width')) === 100) {
@@ -219,6 +218,13 @@
 		if (path === location.pathname) pathFunctions[path]();
 	}
 })();
+
+// 태그 생성
+function createTag(tagName, htmlCode) {
+	let tagElement = document.createElement(tagName);
+	tagElement.innerHTML = htmlCode;
+	return tagElement;
+}
 
 // 소수점 버림 함수
 function floorFixed(number, decimalPlace = 2) {
