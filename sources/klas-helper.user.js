@@ -16,6 +16,14 @@
 (function() {
 	'use strict';
 
+	// 모든 페이지의 헤더에 렌더링
+	document.querySelector('header > .navbar').after(createTag('div',
+		`<div style="background-color: #750A3E; color: white; padding: 15px 0 12px 0; text-align: center">` +
+		`	<div style="font-size: 1.6em; font-weight: bold"><a href="https://github.com/nbsp1221/klas-helper" target="_blank" style="color: white">KLAS Helper</a> 사용 중</div>` +
+		`	<div style="padding-top: 5px">유저 스크립트 Cross-origin 리소스 접근 경고 창이 나올 경우 <span style="color: yellow; font-weight: bold">도메인 항상 허용</span> 버튼을 눌러주셔야 정상적인 사용이 가능합니다.</div>` +
+		`</div>`
+	));
+
 	let pathFunctions = {
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
