@@ -10,13 +10,13 @@
 // @author       nbsp1221
 // @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
 // @license      MIT
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
 (function() {
 	'use strict';
 
-	// 모든 페이지의 헤더에 렌더링
+	// 모든 페이지 헤더에 안내 문구 렌더링
 	document.querySelector('header > .navbar').after(createTag('div',
 		`<div style="background-color: #750A3E; color: white; padding: 15px 0 12px 0; text-align: center">` +
 		`	<div style="font-size: 1.6em; font-weight: bold"><a href="https://github.com/nbsp1221/klas-helper" target="_blank" style="color: white">KLAS Helper</a> 사용 중</div>` +
@@ -65,7 +65,7 @@
 				}.bind(this));
 			};
 
-			// 렌더링
+			// 안내 문구 렌더링
 			document.querySelector('table:nth-of-type(1) tr:nth-of-type(5) td').innerText = '인증 코드를 입력하실 필요가 없습니다.';
 		},
 		// 강의 계획서 조회 - 대학원
@@ -82,7 +82,7 @@
 				}.bind(this));
 			};
 
-			// 렌더링
+			// 안내 문구 렌더링
 			document.querySelector('table:nth-of-type(1) tr:nth-of-type(4) td').innerText = '인증 코드를 입력하실 필요가 없습니다.';
 		},
 		// 수강 및 성적 조회
@@ -208,7 +208,7 @@
 					`	</tbody>` +
 					`</table>`;
 
-				// 렌더링
+				// 평점 정보 렌더링
 				let tableList = document.querySelectorAll('#hakbu > table');
 				let divElement = createTag('div', `<br>${htmlCode}<br>`);
 
@@ -217,6 +217,50 @@
 						tableList[i].before(divElement);
 						break;
 					}
+				}
+			});
+		},
+		// 온라인 강의 컨텐츠 보기
+		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
+			// 안내 문구 렌더링
+			document.querySelector('table').after(createTag('div', `
+				<br>
+				<div style="
+					background-color: lightyellow;
+					border: 2px dashed red;
+					color: red;
+					font-size: 1.2em;
+					font-weight: bold;
+					padding: 10px;
+					text-align: center
+				">
+					<span>다운로드의 경우 개인 소장 용도로만 사용하시길 바라며 무단 복제 등으로 인해 발생하는 불이익에 대해선 어떠한 책임도 지지 않습니다.</span>
+				</div>
+			`));
+
+			// 온라인 강의 동영상 다운로드
+			appModule.$watch('list', function (newVal, oldVal) {
+				for (let i = 0; i < newVal.length; i++) {
+					// 온라인 강의 고유 번호 파싱
+					let videoCode = newVal[i].starting.split('/');
+					videoCode = videoCode[videoCode.length - 1];
+
+					// 온라인 강의 XML 정보 획득
+					GM_xmlhttpRequest({
+						method: 'GET',
+						url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
+						onload: function (response) {
+							let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
+							let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
+
+							// 다운로드 버튼 렌더링
+							document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
+								`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
+								`	<button type="button" class="btn2 btn-gray">다운로드</button>` +
+								`</a>`
+							));
+						}
+					});
 				}
 			});
 		}
