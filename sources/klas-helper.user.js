@@ -27,6 +27,8 @@
 	let pathFunctions = {
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
+			let waitSearch = false;
+
 			// 인증 코드 개선 및 메시지 제거
 			appModule.getSearch = function () {
 				this.selectYearHakgi = this.selectYear + ',' + this.selecthakgi;
@@ -36,6 +38,16 @@
 					alert('과목명 또는 담당 교수를 입력하지 않은 경우 반드시 학과를 선택하셔야 합니다.');
 					return false;
 				}
+
+				// 서버 부하를 방지하기 위해 2초간 검색 방지
+				if (waitSearch) {
+					alert('서버 부하 문제를 방지하기 위해 2초 뒤에 검색이 가능합니다.');
+					return false;
+				}
+
+				// 2초 타이머
+				waitSearch = true;
+				setTimeout(() => { waitSearch = false; }, 2000);
 
 				axios.post('LectrePlanStdList.do', this.$data).then(function (response) {
 					this.list = response.data;
