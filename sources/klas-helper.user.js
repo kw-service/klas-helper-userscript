@@ -222,22 +222,6 @@
 		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
-			// 안내 문구 렌더링
-			document.querySelector('table').after(createTag('div', `
-				<br>
-				<div style="
-					background-color: lightyellow;
-					border: 2px dashed red;
-					color: red;
-					font-size: 1.2em;
-					font-weight: bold;
-					padding: 10px;
-					text-align: center
-				">
-					<span>다운로드의 경우 개인 소장 용도로만 사용하시길 바라며 무단 복제 등으로 인해 발생하는 불이익에 대해선 어떠한 책임도 지지 않습니다.</span>
-				</div>
-			`));
-
 			// 온라인 강의 동영상 다운로드
 			appModule.$watch('list', function (newVal, oldVal) {
 				for (let i = 0; i < newVal.length; i++) {
