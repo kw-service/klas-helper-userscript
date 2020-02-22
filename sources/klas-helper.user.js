@@ -1,28 +1,29 @@
 // ==UserScript==
 // @name         KLAS Helper
 // @namespace    https://github.com/nbsp1221
-// @version      1.2.2
+// @version      1.3.0
 // @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @match        https://klas.kw.ac.kr/*
 // @run-at       document-end
 // @homepageURL  https://github.com/nbsp1221/klas-helper
 // @supportURL   https://github.com/nbsp1221/klas-helper/issues
+// @downloadURL  https://openuserjs.org/install/nbsp1221/KLAS_Helper.user.js
 // @author       nbsp1221
 // @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
 // @license      MIT
-// @grant        GM_xmlhttpRequest
+// @grant        none
 // ==/UserScript==
 
 (function() {
 	'use strict';
 
-	// 모든 페이지 헤더에 안내 문구 렌더링
+/*	// 모든 페이지 헤더에 안내 문구 렌더링
 	document.querySelector('header > .navbar').after(createTag('div',
 		`<div style="background-color: #750A3E; color: white; padding: 15px 0 12px 0; text-align: center">` +
 		`	<div style="font-size: 1.6em; font-weight: bold"><a href="https://github.com/nbsp1221/klas-helper" target="_blank" style="color: white">KLAS Helper</a> 사용 중</div>` +
 		`	<div style="padding-top: 5px">유저 스크립트 Cross-origin 리소스 접근 경고 창이 나올 경우 <span style="color: yellow; font-weight: bold">도메인 항상 허용</span> 버튼을 눌러주셔야 정상적인 사용이 가능합니다.</div>` +
 		`</div>`
-	));
+	));*/
 
 	let pathFunctions = {
 		// 강의 계획서 조회 - 학부
@@ -32,12 +33,6 @@
 			// 인증 코드 개선 및 메시지 제거
 			appModule.getSearch = function () {
 				this.selectYearHakgi = this.selectYear + ',' + this.selecthakgi;
-
-				// 모든 강의 계획서 검색은 서버 부하 문제로 방지
-				if (this.selectRadio === 'all' && this.selectText === '' && this.selectProfsr === '' && this.selecthakgwa === '') {
-					alert('과목명 또는 담당 교수를 입력하지 않은 경우 반드시 학과를 선택하셔야 합니다.');
-					return false;
-				}
 
 				// 서버 부하를 방지하기 위해 2초간 검색 방지
 				if (waitSearch) {
@@ -232,7 +227,7 @@
 				}
 			});
 		},
-		// 온라인 강의 컨텐츠 보기
+/*		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 동영상 다운로드
 			appModule.$watch('list', function (newVal, oldVal) {
@@ -259,11 +254,21 @@
 					});
 				}
 			});
-		}
+		}*/
 	};
 
+	// 기본 함수 삽입
+	let tag = document.createElement('script');
+	tag.textContent = createTag.toString() + floorFixed.toString() + openLinkNewWindow.toString();
+	document.head.appendChild(tag);
+
 	for (let path in pathFunctions) {
-		if (path === location.pathname) pathFunctions[path]();
+		if (path === location.pathname) {
+			// 함수 삽입
+			let tag = document.createElement('script');
+			tag.textContent = '(' + pathFunctions[path].toString() + ')();';
+			document.head.appendChild(tag);
+		}
 	}
 })();
 
