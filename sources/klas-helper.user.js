@@ -11,7 +11,7 @@
 // @author       nbsp1221
 // @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
 // @license      MIT
-// @grant        none
+// @grant        GM.xmlHttpRequest
 // ==/UserScript==
 
 (function() {
@@ -227,7 +227,7 @@
 				}
 			});
 		},
-/*		// 온라인 강의 컨텐츠 보기
+		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 동영상 다운로드
 			appModule.$watch('list', function (newVal, oldVal) {
@@ -235,26 +235,11 @@
 					// 온라인 강의 고유 번호 파싱
 					let videoCode = newVal[i].starting.split('/');
 					videoCode = videoCode[videoCode.length - 1];
-
-					// 온라인 강의 XML 정보 획득
-					GM_xmlhttpRequest({
-						method: 'GET',
-						url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
-						onload: function (response) {
-							let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
-							let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
-
-							// 다운로드 버튼 렌더링
-							document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
-								`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
-								`	<button type="button" class="btn2 btn-gray">다운로드</button>` +
-								`</a>`
-							));
-						}
-					});
+					// 고유 번호 저장
+					document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1})`).setAttribute('data-video-code', videoCode);
 				}
 			});
-		}*/
+		}
 	};
 
 	// 기본 함수 삽입
@@ -269,6 +254,37 @@
 			tag.textContent = '(' + pathFunctions[path].toString() + ')();';
 			document.head.appendChild(tag);
 		}
+	}
+	// 온라인 강의 컨텐츠 보기
+	if ('/std/lis/evltn/OnlineCntntsStdPage.do' === location.pathname) {
+		// 온라인 강의 동영상 다운로드
+		let observer = new MutationObserver(function (mutationList, observer) {
+			for (let i = 0; i < mutationList.length; i++) {
+				if (mutationList[i].addedNodes.length == 0 || mutationList[i].addedNodes[0].nodeName.toLowerCase() != 'tr') {	// tr 태그만
+					continue;
+				}
+				// 온라인 강의 고유 번호 파싱
+				let videoCode = mutationList[i].addedNodes[0].dataset.videoCode;
+
+				// 온라인 강의 XML 정보 획득
+				GM.xmlHttpRequest({
+					method: 'GET',
+					url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
+					onload: function (response) {
+						let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
+						let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
+
+						// 다운로드 버튼 렌더링
+						document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
+							`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
+							`	<button type="button" class="btn2 btn-gray">다운로드</button>` +
+							`</a>`
+						));
+					}
+				});
+			}
+		});
+		observer.observe(document.querySelector('#prjctList > tbody'), { childList: true });
 	}
 })();
 
