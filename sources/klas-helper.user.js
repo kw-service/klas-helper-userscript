@@ -231,13 +231,18 @@
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 동영상 다운로드
 			appModule.$watch('list', function (newVal, oldVal) {
-				for (let i = 0; i < newVal.length; i++) {
+				let videoCodeList = '';
+
+				for (let i of newVal) {
 					// 온라인 강의 고유 번호 파싱
-					let videoCode = newVal[i].starting.split('/');
+					let videoCode = i.starting.split('/');
 					videoCode = videoCode[videoCode.length - 1];
-					// 고유 번호 저장
-					document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1})`).setAttribute('data-video-code', videoCode);
+					videoCodeList += `${videoCode}/`;
 				}
+
+				// 표의 속성에 고유 번호 저장
+				videoCodeList = videoCodeList.substring(0, videoCodeList.length - 1);
+				document.querySelector('#prjctList').setAttribute('data-video-code', videoCodeList);
 			});
 		}
 	};
@@ -259,32 +264,34 @@
 	if ('/std/lis/evltn/OnlineCntntsStdPage.do' === location.pathname) {
 		// 온라인 강의 동영상 다운로드
 		let observer = new MutationObserver(function (mutationList, observer) {
-			for (let i = 0; i < mutationList.length; i++) {
-				if (mutationList[i].addedNodes.length == 0 || mutationList[i].addedNodes[0].nodeName.toLowerCase() != 'tr') {	// tr 태그만
-					continue;
-				}
-				// 온라인 강의 고유 번호 파싱
-				let videoCode = mutationList[i].addedNodes[0].dataset.videoCode;
+			// table 태그에 저장해 둔 고유 번호 정보를 가져와서 파싱
+			let videoCodeList = mutationList[0].target.dataset.videoCode;
+			if (videoCodeList === '') return;
+			videoCodeList = videoCodeList.split('/');
 
-				// 온라인 강의 XML 정보 획득
+			// 이미 만들어진 다운로드 버튼이 있을 경우 제거
+			document.querySelectorAll('.btn-download').forEach(function (item) { item.style.display = 'none'; });
+
+			for (let i = 0; i < videoCodeList.length; i++) {
 				GM.xmlHttpRequest({
 					method: 'GET',
-					url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
+					url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCodeList[i],
 					onload: function (response) {
 						let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
 						let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
 
-						// 다운로드 버튼 렌더링
+						// 다운로드 버튼 렌더링 (클래스 추가)
 						document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
 							`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
-							`	<button type="button" class="btn2 btn-gray">다운로드</button>` +
+							`	<button type="button" class="btn2 btn-gray btn-download">다운로드</button>` +
 							`</a>`
 						));
 					}
 				});
 			}
 		});
-		observer.observe(document.querySelector('#prjctList > tbody'), { childList: true });
+		// childList 감지 대신 속성 감지로 변경
+		observer.observe(document.querySelector('#prjctList'), { attributes: true });
 	}
 })();
 
