@@ -1,28 +1,29 @@
 // ==UserScript==
 // @name         KLAS Helper
 // @namespace    https://github.com/nbsp1221
-// @version      1.2.2
+// @version      1.3.0
 // @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @match        https://klas.kw.ac.kr/*
 // @run-at       document-end
 // @homepageURL  https://github.com/nbsp1221/klas-helper
 // @supportURL   https://github.com/nbsp1221/klas-helper/issues
+// @downloadURL  https://openuserjs.org/install/nbsp1221/KLAS_Helper.user.js
 // @author       nbsp1221
 // @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
 // @license      MIT
-// @grant        GM_xmlhttpRequest
+// @grant        GM.xmlHttpRequest
 // ==/UserScript==
 
 (function() {
 	'use strict';
 
-	// 모든 페이지 헤더에 안내 문구 렌더링
+/*	// 모든 페이지 헤더에 안내 문구 렌더링
 	document.querySelector('header > .navbar').after(createTag('div',
 		`<div style="background-color: #750A3E; color: white; padding: 15px 0 12px 0; text-align: center">` +
 		`	<div style="font-size: 1.6em; font-weight: bold"><a href="https://github.com/nbsp1221/klas-helper" target="_blank" style="color: white">KLAS Helper</a> 사용 중</div>` +
 		`	<div style="padding-top: 5px">유저 스크립트 Cross-origin 리소스 접근 경고 창이 나올 경우 <span style="color: yellow; font-weight: bold">도메인 항상 허용</span> 버튼을 눌러주셔야 정상적인 사용이 가능합니다.</div>` +
 		`</div>`
-	));
+	));*/
 
 	let pathFunctions = {
 		// 강의 계획서 조회 - 학부
@@ -32,12 +33,6 @@
 			// 인증 코드 개선 및 메시지 제거
 			appModule.getSearch = function () {
 				this.selectYearHakgi = this.selectYear + ',' + this.selecthakgi;
-
-				// 모든 강의 계획서 검색은 서버 부하 문제로 방지
-				if (this.selectRadio === 'all' && this.selectText === '' && this.selectProfsr === '' && this.selecthakgwa === '') {
-					alert('과목명 또는 담당 교수를 입력하지 않은 경우 반드시 학과를 선택하셔야 합니다.');
-					return false;
-				}
 
 				// 서버 부하를 방지하기 위해 2초간 검색 방지
 				if (waitSearch) {
@@ -236,34 +231,67 @@
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 동영상 다운로드
 			appModule.$watch('list', function (newVal, oldVal) {
-				for (let i = 0; i < newVal.length; i++) {
+				let videoCodeList = '';
+
+				for (let i of newVal) {
 					// 온라인 강의 고유 번호 파싱
-					let videoCode = newVal[i].starting.split('/');
+					let videoCode = i.starting.split('/');
 					videoCode = videoCode[videoCode.length - 1];
-
-					// 온라인 강의 XML 정보 획득
-					GM_xmlhttpRequest({
-						method: 'GET',
-						url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
-						onload: function (response) {
-							let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
-							let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
-
-							// 다운로드 버튼 렌더링
-							document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
-								`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
-								`	<button type="button" class="btn2 btn-gray">다운로드</button>` +
-								`</a>`
-							));
-						}
-					});
+					videoCodeList += `${videoCode}/`;
 				}
+
+				// 표의 속성에 고유 번호 저장
+				videoCodeList = videoCodeList.substring(0, videoCodeList.length - 1);
+				document.querySelector('#prjctList').setAttribute('data-video-code', videoCodeList);
 			});
 		}
 	};
 
+	// 기본 함수 삽입
+	let tag = document.createElement('script');
+	tag.textContent = createTag.toString() + floorFixed.toString() + openLinkNewWindow.toString();
+	document.head.appendChild(tag);
+
 	for (let path in pathFunctions) {
-		if (path === location.pathname) pathFunctions[path]();
+		if (path === location.pathname) {
+			// 함수 삽입
+			let tag = document.createElement('script');
+			tag.textContent = '(' + pathFunctions[path].toString() + ')();';
+			document.head.appendChild(tag);
+		}
+	}
+	// 온라인 강의 컨텐츠 보기
+	if ('/std/lis/evltn/OnlineCntntsStdPage.do' === location.pathname) {
+		// 온라인 강의 동영상 다운로드
+		let observer = new MutationObserver(function (mutationList, observer) {
+			// table 태그에 저장해 둔 고유 번호 정보를 가져와서 파싱
+			let videoCodeList = mutationList[0].target.dataset.videoCode;
+			if (videoCodeList === '') return;
+			videoCodeList = videoCodeList.split('/');
+
+			// 이미 만들어진 다운로드 버튼이 있을 경우 제거
+			document.querySelectorAll('.btn-download').forEach(function (item) { item.style.display = 'none'; });
+
+			for (let i = 0; i < videoCodeList.length; i++) {
+				GM.xmlHttpRequest({
+					method: 'GET',
+					url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCodeList[i],
+					onload: function (response) {
+						let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
+						let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
+
+						// 다운로드 버튼 렌더링 (클래스 추가)
+						document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
+							`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
+							`	<button type="button" class="btn2 btn-gray btn-download">다운로드</button>` +
+							`</a>`
+						));
+					}
+				});
+			}
+		});
+		// childList 감지 대신 속성 감지로 변경
+		observer.observe(document.querySelector('#prjctList'), { attributes: true });
 	}
 })();
 
