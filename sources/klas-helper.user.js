@@ -7,6 +7,7 @@
 // @run-at       document-end
 // @homepageURL  https://github.com/nbsp1221/klas-helper
 // @supportURL   https://github.com/nbsp1221/klas-helper/issues
+// @updateURL    https://openuserjs.org/meta/nbsp1221/KLAS_Helper.meta.js
 // @downloadURL  https://openuserjs.org/install/nbsp1221/KLAS_Helper.user.js
 // @author       nbsp1221
 // @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
@@ -17,15 +18,9 @@
 (function() {
 	'use strict';
 
-/*	// 모든 페이지 헤더에 안내 문구 렌더링
-	document.querySelector('header > .navbar').after(createTag('div',
-		`<div style="background-color: #750A3E; color: white; padding: 15px 0 12px 0; text-align: center">` +
-		`	<div style="font-size: 1.6em; font-weight: bold"><a href="https://github.com/nbsp1221/klas-helper" target="_blank" style="color: white">KLAS Helper</a> 사용 중</div>` +
-		`	<div style="padding-top: 5px">유저 스크립트 Cross-origin 리소스 접근 경고 창이 나올 경우 <span style="color: yellow; font-weight: bold">도메인 항상 허용</span> 버튼을 눌러주셔야 정상적인 사용이 가능합니다.</div>` +
-		`</div>`
-	));*/
-
-	let pathFunctions = {
+	// 태그에 삽입되는 함수 목록
+	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
+	let externalPathFunctions = {
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
 			let waitSearch = false;
@@ -33,6 +28,12 @@
 			// 인증 코드 개선 및 메시지 제거
 			appModule.getSearch = function () {
 				this.selectYearHakgi = this.selectYear + ',' + this.selecthakgi;
+
+				// 서버 부하를 방지하기 위해 모든 강의 계획서 검색 방지
+				if (this.selectRadio === 'all' && this.selectText === '' && this.selectProfsr === '' && this.cmmnGamok === '' && this.selecthakgwa === '') {
+					alert('과목명 또는 담당 교수를 입력하지 않은 경우 반드시 과목이나 학과를 선택하셔야 합니다.');
+					return false;
+				}
 
 				// 서버 부하를 방지하기 위해 2초간 검색 방지
 				if (waitSearch) {
@@ -94,9 +95,53 @@
 		},
 		// 수강 및 성적 조회
 		'/std/cps/inqire/AtnlcScreStdPage.do': () => {
-			let gradePointChanger = {
-				'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'NP': 0
-			};
+			class GPACalculator {
+				constructor() {
+					this._gradePointChanger = {
+						'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'NP': 0
+					};
+
+					// 취득 학점
+					this._earnedCredit = 0;
+
+					// 평점을 계산하기 위한 변수 (F 포함)
+					this._sumScoreF = 0;
+					this._sumCreditF = 0;
+
+					// 평점을 계산하기 위한 변수 (F 미포함)
+					this._sumScore = 0;
+					this._sumCredit = 0;
+				}
+
+				updateGPA(credit, gradePoint) {
+					// P, R, 그 외 알 수 없는 학점의 경우
+					if (!(gradePoint in this._gradePointChanger)) {
+						if (gradePoint === 'P') this._earnedCredit += credit;
+						return;
+					}
+
+					// F 미포함 계산
+					if (gradePoint !== 'F' || gradePoint !== 'NP') {
+						this._earnedCredit += credit;
+						this._sumScore += credit * this._gradePointChanger[gradePoint];
+						this._sumCredit += credit;
+					}
+
+					// F 포함 계산
+					this._sumScoreF += credit * this._gradePointChanger[gradePoint];
+					this._sumCreditF += credit;
+				}
+
+				getGPA() {
+					let result = {
+						earnedCredit: this._earnedCredit,
+						includeF: this._sumCreditF === 0 ? '-' : floorFixed(this._sumScoreF / this._sumCreditF),
+						notIncludeF: this._sumCredit === 0 ? '-' : floorFixed(this._sumScore / this._sumCredit)
+					};
+
+					return result;
+				}
+			}
 
 			// 평점 계산
 			appModule.$watch('sungjuk', function (newVal, oldVal) {
@@ -104,116 +149,91 @@
 				let trCode = '';
 
 				for (let i = newVal.length - 1; i >= 0; i--) {
-					let year = newVal[i].thisYear;
-					let semester = newVal[i].hakgi;
-					let earnedCredits = 0;
-
-					// 상황별 점수 정보
-					let sumScore = 0, sumScoreF = 0;
-					let sumCredit = 0, sumCreditF = 0;
-					let sumMajorScore = 0, sumMajorScoreF = 0;
-					let sumMajorCredit = 0, sumMajorCreditF = 0;
-					let sumNotMajorScore = 0, sumNotMajorScoreF = 0;
-					let sumNotMajorCredit = 0, sumNotMajorCreditF = 0;
+					let scoreInfo = newVal[i];
+					let year = scoreInfo.thisYear;
+					let semester = scoreInfo.hakgi;
 
 					// 계절 학기의 경우 계산에서 제외
 					if (semester > 2) {
 						continue;
 					}
 
-					for (let j = 0; j < newVal[i].sungjukList.length; j++) {
-						let codeName = newVal[i].sungjukList[j].codeName1.trim();
-						let credit = parseInt(newVal[i].sungjukList[j].hakjumNum);
-						let gradePoint = newVal[i].sungjukList[j].getGrade.trim();
+					// 상황별 점수 정보
+					let GPA = new GPACalculator();
+					let majorGPA = new GPACalculator();
+					let notMajorGPA = new GPACalculator();
 
-						// P와 R 학점의 경우
-						if (!(gradePoint in gradePointChanger)) {
-							if (gradePoint === 'P') earnedCredits += credit;
-							continue;
-						}
-
-						// 취득 학점 계산
-						if (gradePoint !== 'F' || gradePoint !== 'NP') {
-							earnedCredits += credit;
-						}
+					for (let subjectInfo of scoreInfo.sungjukList) {
+						let codeName = subjectInfo.codeName1.trim();
+						let credit = parseInt(subjectInfo.hakjumNum);
+						let gradePoint = subjectInfo.getGrade.trim();
 
 						// 전공 평점 계산
 						if (codeName[0] === '전') {
-							if (gradePoint !== 'F' || gradePoint !== 'NP') {
-								sumMajorScore += credit * gradePointChanger[gradePoint];
-								sumMajorCredit += credit;
-							}
-
-							sumMajorScoreF += credit * gradePointChanger[gradePoint];
-							sumMajorCreditF += credit;
+							majorGPA.updateGPA(credit, gradePoint);
 						}
 						// 전공 외 평점 계산
 						else {
-							if (gradePoint !== 'F' || gradePoint !== 'NP') {
-								sumNotMajorScore += credit * gradePointChanger[gradePoint];
-								sumNotMajorCredit += credit;
-							}
-
-							sumNotMajorScoreF += credit * gradePointChanger[gradePoint];
-							sumNotMajorCreditF += credit;
+							notMajorGPA.updateGPA(credit, gradePoint);
 						}
 
 						// 평균 평점 계산
-						if (gradePoint !== 'F' || gradePoint !== 'NP') {
-							sumScore += credit * gradePointChanger[gradePoint];
-							sumCredit += credit;
-						}
-
-						sumScoreF += credit * gradePointChanger[gradePoint];
-						sumCreditF += credit;
+						GPA.updateGPA(credit, gradePoint);
 					}
 
-					trCode +=
-						`<tr>` +
-						`	<td>${year}학년도 ${semester}학기</td>` +
-						`	<td>${earnedCredits}</td>` +
-						`	<td>${sumMajorCreditF === 0 ? '-' : floorFixed(sumMajorScoreF / sumMajorCreditF)}</td>` +
-						`	<td>${sumMajorCredit === 0 ? '-' : floorFixed(sumMajorScore / sumMajorCredit)}</td>` +
-						`	<td>${sumNotMajorCreditF === 0 ? '-' : floorFixed(sumNotMajorScoreF / sumNotMajorCreditF)}</td>` +
-						`	<td>${sumNotMajorCredit === 0 ? '-' : floorFixed(sumNotMajorScore / sumNotMajorCredit)}</td>` +
-						`	<td>${sumCreditF === 0 ? '-' : floorFixed(sumScoreF / sumCreditF)}</td>` +
-						`	<td>${sumCredit === 0 ? '-' : floorFixed(sumScore / sumCredit)}</td>` +
-						`</tr>`;
+					// 계산 결과 반영
+					GPA = GPA.getGPA();
+					majorGPA = majorGPA.getGPA();
+					notMajorGPA = notMajorGPA.getGPA();
+
+					trCode += `
+						<tr>
+							<td>${year}학년도 ${semester}학기</td>
+							<td>${GPA.earnedCredit}</td>
+							<td>${majorGPA.includeF}</td>
+							<td>${majorGPA.notIncludeF}</td>
+							<td>${notMajorGPA.includeF}</td>
+							<td>${notMajorGPA.notIncludeF}</td>
+							<td>${GPA.includeF}</td>
+							<td>${GPA.notIncludeF}</td>
+						</tr>
+					`;
 				}
 
-				htmlCode +=
-					`<table class="tablegw">` +
-					`	<colgroup>` +
-					`		<col width="25%">` +
-					`		<col width="15%">` +
-					`		<col width="10%">` +
-					`		<col width="10%">` +
-					`		<col width="10%">` +
-					`		<col width="10%">` +
-					`		<col width="10%">` +
-					`		<col width="10%">` +
-					`	</colgroup>` +
-					`	<thead>` +
-					`		<tr>` +
-					`			<th rowspan="2">학기</th>` +
-					`			<th rowspan="2">취득 학점</th>` +
-					`			<th colspan="2">전공 평점</th>` +
-					`			<th colspan="2">전공 외 평점</th>` +
-					`			<th colspan="2">평균 평점</th>` +
-					`		</tr>` +
-					`		<tr>` +
-					`			<th>F 포함</th>` +
-					`			<th>미포함</th>` +
-					`			<th>F 포함</th>` +
-					`			<th>미포함</th>` +
-					`			<th>F 포함</th>` +
-					`			<th>미포함</th>` +
-					`		</tr>` +
-					`	</thead>` +
-					`	<tbody>` +
-							trCode +
-					`	</tbody>` +
-					`</table>`;
+				htmlCode += `
+					<table class="tablegw">
+						<colgroup>
+							<col width="25%">
+							<col width="15%">
+							<col width="10%">
+							<col width="10%">
+							<col width="10%">
+							<col width="10%">
+							<col width="10%">
+							<col width="10%">
+						</colgroup>
+						<thead>
+							<tr>
+								<th rowspan="2">학기</th>
+								<th rowspan="2">취득 학점</th>
+								<th colspan="2">전공 평점</th>
+								<th colspan="2">전공 외 평점</th>
+								<th colspan="2">평균 평점</th>
+							</tr>
+							<tr>
+								<th>F 포함</th>
+								<th>미포함</th>
+								<th>F 포함</th>
+								<th>미포함</th>
+								<th>F 포함</th>
+								<th>미포함</th>
+							</tr>
+						</thead>
+						<tbody>
+							${trCode}
+						</tbody>
+					</table>
+				`;
 
 				// 평점 정보 렌더링
 				let tableList = document.querySelectorAll('#hakbu > table');
@@ -229,69 +249,83 @@
 		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
-			// 온라인 강의 동영상 다운로드
+			// 온라인 강의 고유 번호 파싱
 			appModule.$watch('list', function (newVal, oldVal) {
-				let videoCodeList = '';
+				let videoCodes = '';
 
-				for (let i of newVal) {
-					// 온라인 강의 고유 번호 파싱
-					let videoCode = i.starting.split('/');
-					videoCode = videoCode[videoCode.length - 1];
-					videoCodeList += `${videoCode}/`;
+				for (let videoInfo of newVal) {
+					let videoCode = videoInfo.starting.split('/');
+					videoCodes += videoCode[videoCode.length - 1] + '/';
 				}
-
-				// 표의 속성에 고유 번호 저장
-				videoCodeList = videoCodeList.substring(0, videoCodeList.length - 1);
-				document.querySelector('#prjctList').setAttribute('data-video-code', videoCodeList);
+ 
+				// table 태그에 고유 번호 저장
+				videoCodes = videoCodes.substring(0, videoCodes.length - 1);
+				document.querySelector('#prjctList').setAttribute('data-video-codes', videoCodes);
 			});
 		}
 	};
 
-	// 기본 함수 삽입
-	let tag = document.createElement('script');
-	tag.textContent = createTag.toString() + floorFixed.toString() + openLinkNewWindow.toString();
-	document.head.appendChild(tag);
+	// 태그에 삽입되지 않는 함수 목록
+	// GM 기능을 사용하기 위해 유저 스크립트 내부의 함수가 필요
+	let internalPathFunctions = {
+		// 온라인 강의 컨텐츠 보기
+		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
+			// MutationObserver 삽입
+			let observer = new MutationObserver(function (mutationList, observer) {
+				// table 태그에 저장한 고유 번호 파싱
+				let videoCodes = mutationList[0].target.dataset.videoCodes;
+				if (videoCodes === '') return;
+				videoCodes = videoCodes.split('/');
 
-	for (let path in pathFunctions) {
+				// 이미 생성된 다운로드 버튼 제거
+				document.querySelectorAll('.btn-download').forEach(function (item) {
+					item.style.display = 'none';
+				});
+
+				// 동영상 XML 정보 획득
+				for (let i = 0; i < videoCodes.length; i++) {
+					GM.xmlHttpRequest({
+						method: 'GET',
+						url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCodes[i],
+						onload: function (response) {
+							let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
+							let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
+
+							// 다운로드 버튼 렌더링
+							document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div', `
+								<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">
+									<button type="button" class="btn2 btn-gray btn-download">다운로드</button>
+								</a>
+							`));
+						}
+					});
+				}
+			});
+
+			// MutationObserver 감지 시작
+			observer.observe(document.querySelector('#prjctList'), { attributes: true });
+		}
+	};
+
+	// 기본 함수 삽입
+	document.head.appendChild(createTag('script',
+		createTag.toString() +
+		floorFixed.toString() +
+		openLinkNewWindow.toString()
+	));
+
+	// externalPathFunctions 함수 삽입
+	for (let path in externalPathFunctions) {
 		if (path === location.pathname) {
-			// 함수 삽입
-			let tag = document.createElement('script');
-			tag.textContent = '(' + pathFunctions[path].toString() + ')();';
-			document.head.appendChild(tag);
+			document.head.appendChild(createTag('script', `(${externalPathFunctions[path].toString()})();`));
 		}
 	}
-	// 온라인 강의 컨텐츠 보기
-	if ('/std/lis/evltn/OnlineCntntsStdPage.do' === location.pathname) {
-		// 온라인 강의 동영상 다운로드
-		let observer = new MutationObserver(function (mutationList, observer) {
-			// table 태그에 저장해 둔 고유 번호 정보를 가져와서 파싱
-			let videoCodeList = mutationList[0].target.dataset.videoCode;
-			if (videoCodeList === '') return;
-			videoCodeList = videoCodeList.split('/');
 
-			// 이미 만들어진 다운로드 버튼이 있을 경우 제거
-			document.querySelectorAll('.btn-download').forEach(function (item) { item.style.display = 'none'; });
-
-			for (let i = 0; i < videoCodeList.length; i++) {
-				GM.xmlHttpRequest({
-					method: 'GET',
-					url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCodeList[i],
-					onload: function (response) {
-						let videoName = response.responseXML.getElementsByTagName('main_media')[0].innerHTML;
-						let videoURL = response.responseXML.getElementsByTagName('media_uri')[0].innerHTML.replace('[MEDIA_FILE]', videoName);
-
-						// 다운로드 버튼 렌더링 (클래스 추가)
-						document.querySelector(`#prjctList > tbody > tr:nth-of-type(${i + 1}) > td:nth-of-type(9)`).appendChild(createTag('div',
-							`<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">` +
-							`	<button type="button" class="btn2 btn-gray btn-download">다운로드</button>` +
-							`</a>`
-						));
-					}
-				});
-			}
-		});
-		// childList 감지 대신 속성 감지로 변경
-		observer.observe(document.querySelector('#prjctList'), { attributes: true });
+	// internalPathFunctions 함수 실행
+	for (let path in internalPathFunctions) {
+		if (path === location.pathname) {
+			internalPathFunctions[path]();
+		}
 	}
 })();
 
