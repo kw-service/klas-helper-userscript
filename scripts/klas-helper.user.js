@@ -306,7 +306,7 @@
 
 							tdElement.appendChild(createTag('div', `
 								<a href="${videoURL}" target="_blank" style="display: block; margin-top: 10px">
-									<button type="button" class="btn2 btn-gray btn-download">다운로드</button>
+									<button type="button" class="btn2 btn-gray btn-download">동영상 받기</button>
 								</a>
 							`));
 						}
