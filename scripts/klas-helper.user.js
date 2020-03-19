@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KLAS Helper
 // @namespace    https://github.com/nbsp1221
-// @version      1.3.3
+// @version      1.3.4
 // @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @match        https://klas.kw.ac.kr/*
 // @run-at       document-end
@@ -252,8 +252,6 @@
 			// 온라인 강의 고유 번호 파싱
 			appModule.$watch('list', function (newVal, oldVal) {
 				let videoCodes = [];
-
-				console.log(newVal);
 				
 				for (let i = 0; i < newVal.length; i++) {
 					let videoInfo = newVal[i];
