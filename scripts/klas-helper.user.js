@@ -55,22 +55,20 @@
 				if (item.closeOpt === 'Y') { alert('폐강된 강의입니다.'); return false; }
 				if (item.summary === null) { alert('강의 계획서 정보가 없습니다.'); return false; }
 
-				axios.post('CultureOptOneInfo.do', this.$data).then(function (response) {
-					openLinkNewWindow(
-						response.data.cultureOpt === null ? 'popup/LectrePlanStdView.do' : 'popup/LectrePlanStdFixedView.do',
-						{
-							selectSubj: 'U' + item.thisYear + item.hakgi + item.openGwamokNo + item.openMajorCode + item.bunbanNo + item.openGrade,
-							selectYear: item.thisYear,
-							selecthakgi: item.hakgi
-						},
-						{
-							width: 1000,
-							height: 800,
-							scrollbars: 'yes',
-							title: '강의 계획서 조회'
-						}
-					);
-				}.bind(this));
+				openLinkNewWindow(
+					'popup/LectrePlanStdView.do',
+					{
+						selectSubj: 'U' + item.thisYear + item.hakgi + item.openGwamokNo + item.openMajorCode + item.bunbanNo + item.openGrade,
+						selectYear: item.thisYear,
+						selecthakgi: item.hakgi
+					},
+					{
+						width: 1000,
+						height: 800,
+						scrollbars: 'yes',
+						title: '강의 계획서 조회'
+					}
+				);
 			};
 
 			// 안내 문구 렌더링
