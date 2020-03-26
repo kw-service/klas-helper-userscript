@@ -250,25 +250,49 @@
 			// 온라인 강의 고유 번호 파싱
 			appModule.$watch('list', function (newVal, oldVal) {
 				let videoCodes = [];
+				let videoCount = 0;
+
+				for (let i = 0; i < newVal.length; i++) {
+					videoCount += newVal[i].hasOwnProperty('starting');
+				}
 				
 				for (let i = 0; i < newVal.length; i++) {
-					let videoInfo = newVal[i];
+					const videoInfo = newVal[i];
+					let	videoCode = '';
 
 					if (!videoInfo.hasOwnProperty('starting')) {
 						continue;
 					}
 
-					let videoCode = videoInfo.starting.split('/');
-					videoCode = videoCode[videoCode.length - 1];
-					
-					videoCodes.push({
-						index: i,
-						videoCode: videoCode
-					});
+					// 예외인 고유 번호는 직접 파싱해서 처리
+					if (videoInfo.starting === 'default.htm') {
+						const postData = [];
+						for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
+
+						axios.post('/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do', postData.join('&')).then(function (response) {
+							videoCode = response.data.split('https://kwcommons.kw.ac.kr/em/')[1].split('"')[0];
+						});
+					}
+					else {
+						videoCode = videoInfo.starting.split('/');
+						videoCode = videoCode[videoCode.length - 1];
+					}
+
+					const syncTimer = setInterval(() => {
+						if (videoCode !== '') {
+							videoCodes.push({ index: i, videoCode });
+							clearInterval(syncTimer);
+						}
+					}, 100);
 				}
  
 				// table 태그에 고유 번호 저장
-				document.querySelector('#prjctList').setAttribute('data-video-codes', JSON.stringify(videoCodes));
+				const syncTimer = setInterval(() => {
+					if (videoCount === videoCodes.length) {
+						document.querySelector('#prjctList').setAttribute('data-video-codes', JSON.stringify(videoCodes));
+						clearInterval(syncTimer);
+					}
+				}, 100);
 			});
 
 			// 표 디자인 수정
@@ -308,7 +332,7 @@
 								}
 								else {
 									const mediaURI = documentXML.getElementsByTagName('media_uri')[0].innerHTML;
-	
+
 									for (let videoName of documentXML.getElementsByTagName('main_media')) {
 										videoURLs.push(mediaURI.replace('[MEDIA_FILE]', videoName.innerHTML));
 									}
