@@ -302,15 +302,23 @@
 							const videoURLs = [];
 
 							// 분할된 동영상 등 다양한 상황 처리
-							if (documentXML.getElementsByTagName('desktop').length > 0) {
-								videoURLs.push(documentXML.getElementsByTagName('media_uri')[0].innerHTML);
-							}
-							else {
-								const mediaURI = documentXML.getElementsByTagName('media_uri')[0].innerHTML;
-
-								for (let videoName of documentXML.getElementsByTagName('main_media')) {
-									videoURLs.push(mediaURI.replace('[MEDIA_FILE]', videoName.innerHTML));
+							try {
+								if (documentXML.getElementsByTagName('desktop').length > 0) {
+									videoURLs.push(documentXML.getElementsByTagName('media_uri')[0].innerHTML);
 								}
+								else {
+									const mediaURI = documentXML.getElementsByTagName('media_uri')[0].innerHTML;
+	
+									for (let videoName of documentXML.getElementsByTagName('main_media')) {
+										videoURLs.push(mediaURI.replace('[MEDIA_FILE]', videoName.innerHTML));
+									}
+								}
+							}
+							catch (error) {
+								consoleError(error, {
+									title: 'Video Code',
+									content: videoInfo.videoCode
+								});
 							}
 
 							// 다운로드 버튼 렌더링
@@ -356,6 +364,11 @@
 		}
 	}
 })();
+
+// 콘솔에 오류 띄우기
+function consoleError(error, info) {
+	console.error(`[KLAS Helper Error]\n${info.title}: ${info.content}\nMessage: ${error.message}`);
+}
 
 // 태그 생성
 function createTag(tagName, htmlCode) {
