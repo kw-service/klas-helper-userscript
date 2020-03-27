@@ -252,6 +252,11 @@
 				let videoCodes = [];
 				let videoCount = 0;
 
+				// 디버깅을 위한 로그
+				if (newVal.length > 0) {
+					console.log(JSON.stringify(newVal));
+				}
+
 				for (let i = 0; i < newVal.length; i++) {
 					videoCount += newVal[i].hasOwnProperty('starting');
 				}
@@ -270,7 +275,12 @@
 						for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
 
 						axios.post('/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do', postData.join('&')).then(function (response) {
-							videoCode = response.data.split('https://kwcommons.kw.ac.kr/em/')[1].split('"')[0];
+							if (response.data.indexOf('kwcommons.kw.ac.kr/em/') === -1) {
+								videoCode = undefined;
+							}
+							else {
+								videoCode = response.data.split('kwcommons.kw.ac.kr/em/')[1].split('"')[0];
+							}
 						});
 					}
 					else {
@@ -279,7 +289,11 @@
 					}
 
 					const syncTimer = setInterval(() => {
-						if (videoCode !== '') {
+						if (videoCode === undefined) {
+							videoCount--;
+							clearInterval(syncTimer);
+						}
+						else if (videoCode !== '') {
 							videoCodes.push({ index: i, videoCode });
 							clearInterval(syncTimer);
 						}
