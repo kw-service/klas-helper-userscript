@@ -265,7 +265,7 @@
 					}
 
 					// 예외인 고유 번호는 직접 파싱해서 처리
-					if (videoInfo.starting === 'default.htm') {
+					if (videoInfo.starting === null || videoInfo.starting === 'default.htm') {
 						const postData = [];
 						for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
 
