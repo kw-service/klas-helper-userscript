@@ -260,7 +260,7 @@
 				for (let i = 0; i < newVal.length; i++) {
 					videoCount += newVal[i].hasOwnProperty('starting');
 				}
-				
+
 				for (let i = 0; i < newVal.length; i++) {
 					const videoInfo = newVal[i];
 					let	videoCode = '';
@@ -299,7 +299,7 @@
 						}
 					}, 100);
 				}
- 
+
 				// table 태그에 고유 번호 저장
 				const syncTimer = setInterval(() => {
 					if (videoCount === videoCodes.length) {
@@ -312,6 +312,30 @@
 			// 표 디자인 수정
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(6)').setAttribute('width', '5%');
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
+
+			// 2분 쿨타임 제거
+			$('table:nth-of-type(1) > tbody').append(`
+				<tr>
+					<td>
+						<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
+						<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
+					</td>
+				</tr>
+			`);
+
+			$('.btn-cooldown').click(() => {
+				appModule.getLrnSttus = function (param) {
+					let self = this;
+					axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
+						self.lrnSttus = response.data;
+						let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+						$("#viewForm").prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+						popup.focus();
+					}.bind(this));
+				};
+
+				alert('2분 쿨타임이 제거되었습니다.');
+			});
 		}
 	};
 
@@ -378,18 +402,6 @@
 
 			// MutationObserver 감지 시작
 			observer.observe(document.querySelector('#prjctList'), { attributes: true });
-			
-			// 2분 쿨타임 제거
-			$('.contenttitle').after('<button type="button" class="btn2 btn-learn btn-cooldown">쿨타임 제거</button>');
-			$('.btn-cooldown').click(() => {
-				appModule.getLrnSttus=function(param) {
-					let self = this;
-					axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
-						self.lrnSttus = response.data;
-						var popup = window.open('', 'previewPopup', 'resizable=yes scrollbars=yes, top=100px, left=100px, height=' + self.height +'px, width= '+ self.width +'px');
-						$("#viewForm").prop('target', 'previewPopup').prop('action',"/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do").submit().prop('target', '');popup.focus();}.bind(this));}
-				alert("쿨타임이 제거되었습니다.");
-			});
 		}
 	};
 
