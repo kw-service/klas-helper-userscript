@@ -245,6 +245,26 @@
 				}
 			});
 		},
+		//지난 학기 석차 조회하기
+		'std/cps/inqire/StandStdPage.do' : () => {
+		  let state=0;
+		       appModule.$watch('stand',function(newval,oldVal){
+		       if(state==0)
+		       {
+			var info = prompt("석차를 조회하고자 하는 년도와 학기를 입력하세요(2016,1) : ").split(",");
+			var params = {"selectYearhakgi":info[0]+','+info[1],"selectChangeYn":"Y"};
+			state++;
+		       }
+
+		       if(state==1)
+		       {
+			    appModule.getData(params);
+			    input++;
+		       }
+
+
+     });
+		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 고유 번호 파싱
