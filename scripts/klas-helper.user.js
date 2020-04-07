@@ -258,8 +258,7 @@
 				// 현재 연도와 학기 및 입학년도 획득
 				let nowYear = appModule.$data.selectYear;
 				let nowSemester = appModule.$data.selectHakgi;
-				let hakbun = appModule.$data.info[0].hakbun;
-				let admissionYear = hakbun.substring(0,4);
+				const admissionYear = parseInt(appModule.$data.info[0].hakbun.substring(0, 4));
 				// 비동기 문제로 타이머 사용
 				const syncTimer = setInterval(() => {
 
@@ -278,44 +277,29 @@
 
 					// 석차 조회
 					axios.post('/std/cps/inqire/StandStdList.do', params).then(function (response) {
-						if (response.data === '') {
-							    if(nowYear < admissionYear)
-							    {
-										 clearInterval(syncTimer);
-
-										 alert('석차 정보를 모두 불러왔습니다.');
-										 $('.btn-ranking').hide();
-							    }
-							    else
-							    {
-								$('table.AType > tbody').append(`
-								 <tr>
-								        <td>${nowYear}</td>
-									<td>${nowSemester}</td>
-									<td>-</td>
-									<td>-</td>
-									<td>-</td>
-									<td>-</td>
-									<td>-</td>
-									<td></td>
-								 </tr>
+							if (response.data) {
+	                                      		  $('table.AType > tbody').append(`
+		                                    		<tr>
+								   <td>${response.data.thisYear}</td>
+								   <td>${response.data.hakgi}</td>
+			                       			   <td>${response.data.applyHakjum}</td>
+					                           <td>${response.data.applySum}</td>
+						                   <td>${response.data.applyPoint}</td>
+					                           <td>${response.data.pcnt}</td>
+					                           <td>${response.data.classOrder} / ${response.data.manNum}</td>
+					                           <td>${response.data.warningOpt ? response.data.warningOpt : ''}</td>
+				                           	</tr>
 								`);
-							    }
-						}
-						else {
-							$('table.AType > tbody').append(`
-								<tr>
-									<td>${response.data.thisYear}</td>
-									<td>${response.data.hakgi}</td>
-									<td>${response.data.applyHakjum}</td>
-									<td>${response.data.applySum}</td>
-									<td>${response.data.applyPoint}</td>
-									<td>${response.data.pcnt}</td>
-									<td>${response.data.classOrder} / ${response.data.manNum}</td>
-									<td>${response.data.warningOpt ? response.data.warningOpt : ''}</td>
-								</tr>
-							`);
-						}
+
+							return;
+							}
+
+							if (nowYear < admissionYear) {
+							clearInterval(syncTimer);
+
+							alert('석차 정보를 모두 불러왔습니다.');
+							$('.btn-ranking').hide();
+							}
 					}.bind(this));
 				}, 500);
 			});
