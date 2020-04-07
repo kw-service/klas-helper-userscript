@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KLAS Helper
 // @namespace    https://github.com/nbsp1221
-// @version      1.4.0
+// @version      1.5.0
 // @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @match        https://klas.kw.ac.kr/*
 // @run-at       document-end
@@ -245,9 +245,9 @@
 				}
 			});
 		},
-		 // 재학 했던 학기의 모든 석차 조회
+		// 석차 조회
 		'/std/cps/inqire/StandStdPage.do': () => {
-			// 이전 석차 내역 불러오기
+			// 재학했던 학기의 모든 석차 조회
 			$('.tablegw').after(`
 				<div style="margin-top: 10px">
 					<button type="button" class="btn2 btn-learn btn-ranking">이전 석차 내역 불러오기</button>
@@ -255,19 +255,19 @@
 			`);
 
 			$('.btn-ranking').click(() => {
-				// 현재 연도와 학기 및 입학년도 획득
+				// 현재 연도, 학기, 입학연도 획득
 				let nowYear = appModule.$data.selectYear;
 				let nowSemester = appModule.$data.selectHakgi;
 				const admissionYear = parseInt(appModule.$data.info[0].hakbun.substring(0, 4));
+
 				// 비동기 문제로 타이머 사용
 				const syncTimer = setInterval(() => {
-
 				    if (nowSemester === '2') {
-					nowSemester = '1';
+						nowSemester = '1';
 				    }
 				    else {
-					nowYear--;
-					nowSemester = '2';
+						nowYear--;
+						nowSemester = '2';
 				    }
 
 					const params = {
@@ -277,29 +277,29 @@
 
 					// 석차 조회
 					axios.post('/std/cps/inqire/StandStdList.do', params).then(function (response) {
-							if (response.data) {
-	                                      		  $('table.AType > tbody').append(`
-		                                    		<tr>
-								   <td>${response.data.thisYear}</td>
-								   <td>${response.data.hakgi}</td>
-			                       			   <td>${response.data.applyHakjum}</td>
-					                           <td>${response.data.applySum}</td>
-						                   <td>${response.data.applyPoint}</td>
-					                           <td>${response.data.pcnt}</td>
-					                           <td>${response.data.classOrder} / ${response.data.manNum}</td>
-					                           <td>${response.data.warningOpt ? response.data.warningOpt : ''}</td>
-				                           	</tr>
-								`);
+						if (response.data) {
+							$('table.AType > tbody').append(`
+								<tr>
+									<td>${response.data.thisYear}</td>
+									<td>${response.data.hakgi}</td>
+									<td>${response.data.applyHakjum}</td>
+									<td>${response.data.applySum}</td>
+									<td>${response.data.applyPoint}</td>
+									<td>${response.data.pcnt}</td>
+									<td>${response.data.classOrder} / ${response.data.manNum}</td>
+									<td>${response.data.warningOpt ? response.data.warningOpt : ''}</td>
+								</tr>
+							`);
 
 							return;
-							}
+						}
 
-							if (nowYear < admissionYear) {
+						if (nowYear < admissionYear) {
 							clearInterval(syncTimer);
 
 							alert('석차 정보를 모두 불러왔습니다.');
 							$('.btn-ranking').hide();
-							}
+						}
 					}.bind(this));
 				}, 500);
 			});
