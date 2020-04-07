@@ -290,7 +290,14 @@
 							    {
 								$('table.AType > tbody').append(`
 								 <tr>
-								   <td colspan="8">${nowYear}년도 ${nowSemester}학기의 석차정보가 없습니다.</td>
+								    <td>${nowYear}</td>
+									<td>${nowSemester}</td>
+									<td>-</td>
+									<td>-</td>
+									<td>-</td>
+									<td>-</td>
+									<td>-</td>
+									<td></td>
 								 </tr>
 								`);
 							    }
