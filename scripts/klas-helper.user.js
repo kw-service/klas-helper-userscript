@@ -290,7 +290,7 @@
 							    {
 								$('table.AType > tbody').append(`
 								 <tr>
-								    <td>${nowYear}</td>
+								        <td>${nowYear}</td>
 									<td>${nowSemester}</td>
 									<td>-</td>
 									<td>-</td>
