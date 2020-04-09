@@ -262,13 +262,13 @@
 
 				// 비동기 문제로 타이머 사용
 				const syncTimer = setInterval(() => {
-				    if (nowSemester === '2') {
+					if (nowSemester === '2') {
 						nowSemester = '1';
-				    }
-				    else {
+					}
+					else {
 						nowYear--;
 						nowSemester = '2';
-				    }
+					}
 
 					const params = {
 						'selectYearhakgi': nowYear + ',' + nowSemester,
@@ -466,6 +466,7 @@
 
 	// 기본 함수 삽입
 	document.head.appendChild(createTag('script',
+		consoleError.toString() +
 		createTag.toString() +
 		floorFixed.toString() +
 		openLinkNewWindow.toString()
