@@ -17,10 +17,32 @@
 
 (function() {
 	'use strict';
+//온라인 강의리스트 및 출석 바로가기
+		'/std/lis/evltn/LctrumHomeStdPage.do' : () => {
+			lrnCerti.certiCheck = function(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun){
 
+appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
+}
+appModule.goVideo = function(param){
+ linkUrl('OnlineCntntsStdPage.do',this.$data);
+}
+
+var tag = document.getElementsByClassName("title-text");
+tag[2].innerHTML="출석"+ '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
+tag[2].onclick = function()
+{
+ linkUrl('https://klas.kw.ac.kr/std/ads/admst/KwAttendStdPage.do',this.$data);
+}
+tag[9].innerHTML = "온라인 강의리스트" + '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
+tag[9].onclick = function()
+{
+    linkUrl('OnlineCntntsStdPage.do',this.$data);
+}
+		},
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
 			let waitSearch = false;
