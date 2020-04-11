@@ -373,7 +373,7 @@
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
 
 			// 2분 쿨타임 제거
-			$('table:nth-of-type(1) > tbody').append(`
+			$('#appModule > table > tbody').append(`
 				<tr>
 					<td>
 						<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
