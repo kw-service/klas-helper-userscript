@@ -21,6 +21,158 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		//학습 톡톡 작성자 추가
+		  '/std/lis/sport/LrnTalkStdPopupPage.do' : ()=>{
+        appLrnTalk.$watch('list',function(newVal,oldVal){
+
+           $("div:eq(8) *").remove();
+           $("div:eq(8)").append(`
+             <p class="alltxt">
+                    전체글 <span class="fred B">${appLrnTalk.totalCount}</span>
+                </p>
+           `);
+           for(let i=appLrnTalk.totalCount-1;i>-1;i--)
+           {
+               let message = appLrnTalk.list[i].mssage;
+               let registDt = appLrnTalk.list[i].registDt;
+               let Date = registDt.substr(0,10);
+               let Year = parseInt(registDt.substr(0,4));
+               let Month = parseInt(registDt.substr(5,2));
+               let Day = parseInt(Date.substr(8,2));
+               let Time = registDt.substr(11,8);
+               let hour = parseInt(Time.substr(0,2))+9;
+               let min = registDt.substr(14,2);
+               let sec = registDt.substr(17,2);
+               let yoon =0;
+               if(hour>24)
+               {
+                hour-=24;
+                Day+=1;
+                if(Year%4 ==0)
+                {
+                 if(Year%100 ==0)
+                 {
+                     if(Year%400==0) // 윤년
+                     {
+                       yoon=1;
+                     }
+                 }
+                 else //윤년
+                 {
+                   yoon=1;
+                  }
+                }
+
+                if(Month ==1 || Month==3 || Month==5 || Month==7 || Month==8 || Month==10 || Month==12)
+                {
+                 if(Day>31)
+                 {
+                     Day-=31;
+                     Month+=1;
+                     if(Month==13)
+                     {
+                      Month-=12;
+                      Year+=1;
+                     }
+                 }
+                }
+                else if(Month ==4 || Month == 6 || Month==9 || Month==11)
+                {
+                  if(Day>30)
+                  {
+                     Day-=30;
+                     Month+=1;
+                  }
+                }
+                else
+                {
+                    if(yoon==1)
+                    {
+                        if(Day>29)
+                        {
+                            Day-=29;
+                            Month+=1;
+                        }
+                    }
+                    else
+                    {
+                        if(Day>28)
+                        {
+                            Day-=28;
+                            Month+=1;
+                        }
+                    }
+                }
+
+               }
+
+               if(hour<10)
+               {
+                  hour.toString();
+                  hour = "0"+hour;
+                }
+                if(Day < 10)
+                {
+                 Day.toString();
+                 Day = "0"+Day;
+                }
+
+               if(Month<10)
+               {
+                   Month.toString();
+                   Month = "0"+Month;
+               }
+
+               registDt = Year + "-" + Month + "-" + Day + " " + hour + ":" + min;
+               let registInfo = appLrnTalk.list[i].registerInfo;
+               let sortOrdr = appLrnTalk.list[i].sortOrdr;
+               let gubun = appLrnTalk.list[i].gubun;
+               if(sortOrdr == 0 && gubun=='2') // 질문 작성자가 학생
+               {
+                $('.alltxt').after(`
+
+                 <ul class="talkreply">
+                  <li class="suject">${message}</li>
+                  <li class="date">${registDt}</li>
+                  <li class="name">${registInfo}</li>
+                  </ul>
+
+               `);
+                }
+               else if(sortOrdr ==0 && gubun!='2') // 질문 작성자가 교수
+               {
+                $('.alltxt').after(`
+                 <ul class="talkreply">
+                  <ul class="talkreplyview">
+                   <li class="suject">${message}</li>
+                   <li class="date">${registDt}</li>
+                   <li class="name">${registInfo}</li>
+                  </ul>
+                 </ul>
+               `);
+               }
+
+               if(sortOrdr>0) // 질문에 대한 답변
+               {
+                $('.alltxt').after(`
+                <ul class="talkreply">
+                 <li class="reply">
+                   <ul class="talkreplyview">
+                      <span></span>
+                      <li class="suject">${message}</li>
+                      <li class="date">${registDt}</li>
+                      <li class="name">${registInfo}</li>
+                   </ul>
+                 </li>
+                </ul>
+               `);
+               }
+
+
+           }
+
+        });
+
 		//온라인 강의리스트 및 출석 바로가기
 		'/std/lis/evltn/LctrumHomeStdPage.do' : () => {
 			lrnCerti.certiCheck = function(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun){
