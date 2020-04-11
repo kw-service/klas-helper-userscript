@@ -444,7 +444,7 @@
 
 							// 다운로드 버튼 렌더링
 							videoURLs.forEach((videoURL, i) => {
-								let tdList = document.querySelectorAll(`#prjctList > tbody > tr:nth-of-type(${videoInfo.index + 1}) > td`);
+								let tdList = document.querySelectorAll(`.tablelistbox > #prjctList > tbody > tr:nth-of-type(${videoInfo.index + 1}) > td`);
 								let tdElement = tdList[tdList.length - 1];
 								tdElement = tdElement.className === '' ? tdElement : tdList[tdList.length - 2];
 
