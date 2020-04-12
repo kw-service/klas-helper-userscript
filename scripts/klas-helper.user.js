@@ -195,6 +195,26 @@ tag[9].onclick = function()
     linkUrl('OnlineCntntsStdPage.do',this.$data);
 }
 		},
+			'/std/lis/evltn/TaskStdPage.do' : () =>{
+				  appModule.linkBasicScorePage = function(ordseq,weeklySeq,weeklySubseq) //미제출 상태(제출기간 이전 혹은 이후)
+  {
+      var input = prompt('[과제제출기한 이전 혹은 과제를 미제출하셨습니다.]\n첨부파일을 확인할까요?(y/n)','y');
+      if(input=='y')
+      {
+       appModule.linkInsertPage(ordseq);
+      }
+      else if(input==null)
+          return;
+      else
+      {
+            this.ordseq = ordseq;
+        	this.weeklySeq = weeklySeq;
+        	this.weeklySubSeq = weeklySubseq;
+            //console.log(ordseq,weeklySeq,weeklySubseq);
+        	linkUrl('TaskViewBasicScoreStdPage.do', this.$data);
+      }
+  };
+        },
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
 			let waitSearch = false;
