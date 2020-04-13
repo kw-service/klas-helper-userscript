@@ -373,7 +373,7 @@
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
 
 			// 2분 쿨타임 제거
-			$('#appModule > table > tbody').append(`
+			$('#appModule > table:not(#prjctList) > tbody').append(`
 				<tr>
 					<td>
 						<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
@@ -444,7 +444,7 @@
 
 							// 다운로드 버튼 렌더링
 							videoURLs.forEach((videoURL, i) => {
-								let tdList = document.querySelectorAll(`.tablelistbox > #prjctList > tbody > tr:nth-of-type(${videoInfo.index + 1}) > td`);
+								let tdList = document.querySelectorAll(`#prjctList > tbody > tr:nth-of-type(${videoInfo.index + 1}) > td`);
 								let tdElement = tdList[tdList.length - 1];
 								tdElement = tdElement.className === '' ? tdElement : tdList[tdList.length - 2];
 
