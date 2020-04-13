@@ -21,6 +21,22 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		  //이번 학기 포트폴리오 오류 수정
+        '/std/egn/chck/PrtFolioSugangStdPage.do' : ()=> {
+          appModule.$watch('sungjuk',function(newVal,oldVal){
+            let tableList = document.querySelectorAll('#appModule > table');
+
+             for(let i=0;i<tableList.length;i++)
+             {
+                 if(tableList[i].getAttribute('align') == 'center')
+                 {
+                     tableList[i].querySelector('tr:nth-of-type(2) td').innerText ="총 "+appModule.sungjuk[0].sungjukList.length+"개의 설계과목을 수강중입니다.";
+                     break;
+                 }
+             }
+          });
+
+        },
 		//학습 톡톡 작성자 추가
 		  '/std/lis/sport/LrnTalkStdPopupPage.do' : ()=>{
         appLrnTalk.$watch('list',function(newVal,oldVal){
