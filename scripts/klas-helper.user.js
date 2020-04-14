@@ -400,7 +400,7 @@
 			$('#appModule > table:not(#prjctList) > tbody').append(`
 				<tr>
 					<td>
-						<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 행위는 저작권을 침해하는 행위이며 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
+						<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
 					</td>
 				</tr>
 			`);
