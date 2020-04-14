@@ -21,30 +21,8 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
-		//선수 교과목 이수현황 선택형으로 조회
-        '/std/egn/chck/BeforeSbjectStdPage.do' : ()=>{
-            const syncTimer = setInterval(() => {
-					const param = {};
-                    axios.post('/std/cps/atnlc/AtnlcYearList.do',param)
-                        .then(function (response) {
-                        if(response.data){
-                          document.querySelector('.tablegw:nth-of-type(1) tr td:nth-of-type(1)').innerHTML = `<select style="width:100%" id="thisYear" v-model="thisYear">`;
-                          for(let i=0;i<response.data.length;i++)
-                          {
-                           $("#thisYear").append(`<option value='${response.data[i].year}'>${response.data[i].year}학년도</option>`);
-                          }
-                          document.querySelector('.tablegw:nth-of-type(1) tr td:nth-of-type(1)').append = `</select>`;
-                            clearInterval(syncTimer);
-                        }
 
-                    }.bind(this));
-            }, 10);
-           appModule.beforePop = function(){
-            this.thisYear = $("#thisYear option:selected").val();
-            linkUrl('BeforeIsuStatStdPage.do',this.$data)
-           };
-        },
-        //설계포트폴리오 목록 재정렬
+		    //설계포트폴리오 목록 재정렬
         '/std/egn/chck/PrtFolioStdPage.do' : ()=>{
             var count=0;
            appModule.$watch('list',function(newVal,oldVal){
@@ -512,25 +490,64 @@ tag[9].onclick = function()
 				}
 			});
 		},
-		//지난 학기 석차 조회하기
-		'std/cps/inqire/StandStdPage.do' : () => {
-		  let state=0;
-		       appModule.$watch('stand',function(newval,oldVal){
-		       if(state==0)
-		       {
-			var info = prompt("석차를 조회하고자 하는 년도와 학기를 입력하세요(2016,1) : ").split(",");
-			var params = {"selectYearhakgi":info[0]+','+info[1],"selectChangeYn":"Y"};
-			state++;
-		       }
+		 // 재학 했던 학기의 모든 석차 조회
+		'/std/cps/inqire/StandStdPage.do': () => {
+			// 이전 석차 내역 불러오기
+			$('.tablegw').after(`
+				<div style="margin-top: 10px">
+					<button type="button" class="btn2 btn-learn btn-ranking">이전 석차 내역 불러오기</button>
+				</div>
+			`);
 
-		       if(state==1)
-		       {
-			    appModule.getData(params);
-			    input++;
-		       }
+			$('.btn-ranking').click(() => {
+				// 현재 연도와 학기 및 입학년도 획득
+				let nowYear = appModule.$data.selectYear;
+				let nowSemester = appModule.$data.selectHakgi;
+				const admissionYear = parseInt(appModule.$data.info[0].hakbun.substring(0, 4));
+				// 비동기 문제로 타이머 사용
+				const syncTimer = setInterval(() => {
 
+				    if (nowSemester === '2') {
+					nowSemester = '1';
+				    }
+				    else {
+					nowYear--;
+					nowSemester = '2';
+				    }
 
-     });
+					const params = {
+						'selectYearhakgi': nowYear + ',' + nowSemester,
+						'selectChangeYn': 'Y'
+					};
+
+					// 석차 조회
+					axios.post('/std/cps/inqire/StandStdList.do', params).then(function (response) {
+							if (response.data) {
+	                                      		  $('table.AType > tbody').append(`
+		                                    		<tr>
+								   <td>${response.data.thisYear}</td>
+								   <td>${response.data.hakgi}</td>
+			                       			   <td>${response.data.applyHakjum}</td>
+					                           <td>${response.data.applySum}</td>
+						                   <td>${response.data.applyPoint}</td>
+					                           <td>${response.data.pcnt}</td>
+					                           <td>${response.data.classOrder} / ${response.data.manNum}</td>
+					                           <td>${response.data.warningOpt ? response.data.warningOpt : ''}</td>
+				                           	</tr>
+								`);
+
+							return;
+							}
+
+							if (nowYear < admissionYear) {
+							clearInterval(syncTimer);
+
+							alert('석차 정보를 모두 불러왔습니다.');
+							$('.btn-ranking').hide();
+							}
+					}.bind(this));
+				}, 500);
+			});
 		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
