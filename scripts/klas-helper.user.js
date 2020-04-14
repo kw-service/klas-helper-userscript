@@ -21,7 +21,8 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
-		//설계포트폴리오 목록 재정렬
+
+		    //설계포트폴리오 목록 재정렬
         '/std/egn/chck/PrtFolioStdPage.do' : ()=>{
             var count=0;
            appModule.$watch('list',function(newVal,oldVal){
