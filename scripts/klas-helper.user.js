@@ -395,6 +395,15 @@
 
 				alert('2분 쿨타임이 제거되었습니다.');
 			});
+
+			// 저작권 안내 문구 렌더링
+			$('#appModule > table:not(#prjctList) > tbody').append(`
+				<tr>
+					<td>
+						<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 행위는 저작권을 침해하는 행위이며 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
+					</td>
+				</tr>
+			`);
 		}
 	};
 
