@@ -21,6 +21,63 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		//선수 교과목 이수현황 선택형으로 조회
+        '/std/egn/chck/BeforeSbjectStdPage.do' : ()=>{
+            const syncTimer = setInterval(() => {
+					const param = {};
+                    axios.post('/std/cps/atnlc/AtnlcYearList.do',param)
+                        .then(function (response) {
+                        if(response.data){
+                          document.querySelector('.tablegw:nth-of-type(1) tr td:nth-of-type(1)').innerHTML = `<select style="width:100%" id="thisYear" v-model="thisYear">`;
+                          for(let i=0;i<response.data.length;i++)
+                          {
+                           $("#thisYear").append(`<option value='${response.data[i].year}'>${response.data[i].year}학년도</option>`);
+                          }
+                          document.querySelector('.tablegw:nth-of-type(1) tr td:nth-of-type(1)').append = `</select>`;
+                            clearInterval(syncTimer);
+                        }
+
+                    }.bind(this));
+            }, 10);
+           appModule.beforePop = function(){
+            this.thisYear = $("#thisYear option:selected").val();
+            linkUrl('BeforeIsuStatStdPage.do',this.$data)
+           };
+        },
+        //설계포트폴리오 목록 재정렬
+        '/std/egn/chck/PrtFolioStdPage.do' : ()=>{
+            var count=0;
+           appModule.$watch('list',function(newVal,oldVal){
+              if(count==0)
+              {
+
+
+                  appModule.list.sort(function(a,b){
+                      var y1 = b['thisYear'];
+                      var y2 = a['thisYear'];
+                      var h1 = b['hakgi'];
+                      var h2 = a['hakgi'];
+
+                      if(y1<y2) return -1;
+                      if(y1>y2) return 1;
+                      if(h1<h2) return -1;
+                      if(h1>h2) return 1;
+
+                      return 0;
+                  });
+                   for(let i=0;i<appModule.list.length;i++)
+                   {
+                       var year = parseInt(appModule.list[i].thisYear);
+                       var hakgi = parseInt(appModule.list[i].hakgi);
+                       console.log(year+hakgi);
+                   }
+                count++;
+              }
+
+
+           });
+
+        },
 		  //이번 학기 포트폴리오 오류 수정
         '/std/egn/chck/PrtFolioSugangStdPage.do' : ()=> {
           appModule.$watch('sungjuk',function(newVal,oldVal){
