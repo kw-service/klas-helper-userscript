@@ -21,6 +21,27 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+	//KW출첵 재학 년도로만 초기화
+        '/std/ads/admst/KwAttendStdPage.do' : ()=>{
+            var count=0;
+            if(count==0)
+            {
+             const param = {};
+            axios.post('/std/cps/atnlc/AtnlcYearList.do',param)
+                        .then(function (response) {
+                        if(response.data){
+                          for(let i=0;i<response.data.length;i++)
+                          {
+                           appModule.selectYearList.push({'value' : response.data[i].year, 'text' : response.data[i].year+'년'});
+                          }
+                          while(appModule.selectYearList.length > response.data.length)
+                              appModule.selectYearList.shift();
+                        }
+
+                    }.bind(this));
+             count++;
+            }
+        },
  //선수 교과목 이수현황 선택형으로 조회
         '/std/egn/chck/BeforeSbjectStdPage.do' : ()=>{
             const syncTimer = setInterval(() => {
@@ -48,7 +69,7 @@
         '/std/egn/chck/BeforeIsuStatStdPage.do' : ()=>{
            document.querySelector('.contenttitle').append(" ["+appModule.$data.thisYear+"학년도 "+appModule.$data.hakgi+"학기]");
         },
-		    //설계포트폴리오 목록 재정렬
+        //설계포트폴리오 목록 재정렬
         '/std/egn/chck/PrtFolioStdPage.do' : ()=>{
             var count=0;
            appModule.$watch('list',function(newVal,oldVal){
@@ -82,7 +103,7 @@
            });
 
         },
-		  //이번 학기 포트폴리오 오류 수정
+	  //이번 학기 포트폴리오 오류 수정
         '/std/egn/chck/PrtFolioSugangStdPage.do' : ()=> {
           appModule.$watch('sungjuk',function(newVal,oldVal){
             let tableList = document.querySelectorAll('#appModule > table');
@@ -98,8 +119,8 @@
           });
 
         },
-		//학습 톡톡 작성자 추가
-		  '/std/lis/sport/LrnTalkStdPopupPage.do' : ()=>{
+	//학습 톡톡 작성자 
+	  '/std/lis/sport/LrnTalkStdPopupPage.do' : ()=>{
         appLrnTalk.$watch('list',function(newVal,oldVal){
 
            $("div:eq(8) *").remove();
@@ -249,48 +270,255 @@
            }
 
         });
+		   //제출한 과제 내역 세부 조회
+        '/std/lis/evltn/TaskViewStdPage.do' : () =>{
 
-		//온라인 강의리스트 및 출석 바로가기
-		'/std/lis/evltn/LctrumHomeStdPage.do' : () => {
-			lrnCerti.certiCheck = function(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun){
+		      //채점 시각 확인
 
-appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-}
-appModule.goVideo = function(param){
- linkUrl('OnlineCntntsStdPage.do',this.$data);
-}
+		      appModule.$watch('smt',function(newVal,oldVal){
+		       let registDt = appModule.smt.registDt;
+		       let Date = registDt.substr(0,10);
+		       let Year = parseInt(registDt.substr(0,4));
+		       let Month = parseInt(registDt.substr(5,2));
+		       let Day = parseInt(Date.substr(8,2));
+		       let Time = registDt.substr(11,8);
+		       let hour = parseInt(Time.substr(0,2))+9;
+		       let min = registDt.substr(14,2);
+		       let sec = registDt.substr(17,2);
+		       let yoon =0;
+		       if(hour>24)
+		       {
+			hour-=24;
+			Day+=1;
+			if(Year%4 ==0)
+			{
+			 if(Year%100 ==0)
+			 {
+			     if(Year%400==0) // 윤년
+			     {
+			       yoon=1;
+			     }
+			 }
+			 else //윤년
+			 {
+			   yoon=1;
+			  }
+			}
 
-var tag = document.getElementsByClassName("title-text");
-tag[2].innerHTML="출석"+ '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
-tag[2].onclick = function()
-{
- linkUrl('https://klas.kw.ac.kr/std/ads/admst/KwAttendStdPage.do',this.$data);
-}
-tag[9].innerHTML = "온라인 강의리스트" + '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
-tag[9].onclick = function()
-{
-    linkUrl('OnlineCntntsStdPage.do',this.$data);
-}
+			if(Month ==1 || Month==3 || Month==5 || Month==7 || Month==8 || Month==10 || Month==12)
+			{
+			 if(Day>31)
+			 {
+			     Day-=31;
+			     Month+=1;
+			     if(Month==13)
+			     {
+			      Month-=12;
+			      Year+=1;
+			     }
+			 }
+			}
+			else if(Month ==4 || Month == 6 || Month==9 || Month==11)
+			{
+			  if(Day>30)
+			  {
+			     Day-=30;
+			     Month+=1;
+			  }
+			}
+			else
+			{
+			    if(yoon==1)
+			    {
+				if(Day>29)
+				{
+				    Day-=29;
+				    Month+=1;
+				}
+			    }
+			    else
+			    {
+				if(Day>28)
+				{
+				    Day-=28;
+				    Month+=1;
+				}
+			    }
+			}
+
+		       }
+
+		       if(hour<10)
+		       {
+			  hour.toString();
+			  hour = "0"+hour;
+			}
+			if(Day < 10)
+			{
+			 Day.toString();
+			 Day = "0"+Day;
+			}
+
+		       if(Month<10)
+		       {
+			   Month.toString();
+			   Month = "0"+Month;
+		       }
+
+		       registDt = Year + "-" + Month + "-" + Day + " " + hour + ":" + min;
+		      var grade_time = appModule.smt.tutordate;
+		      document.querySelector('.tablegw:nth-of-type(1) tr:nth-of-type(5) th').innerText = "제출시각";
+		      document.querySelector('.tablegw:nth-of-type(1) tr:nth-of-type(5) td').innerText = registDt;
+			  if(grade_time!=null)
+			  {
+			      $('.tablegw:nth-of-type(3)').append(`
+
+
+			      <tr>
+				<th>채점시각</th>
+				<td class='lft'>${grade_time.substring(0,4)}-${grade_time.substring(4,6)}-${grade_time.substring(6,8)} ${grade_time.substring(8,10)}:${grade_time.substring(10,12)}</td>
+			      </tr>
+
+
+			`);
+
+		      appModule.smt.finalscore+="점";
+			  }
+		      });
+		    //채점 점수 공개
+		     appModule.$watch('rpt',function(newVal,oldVal){
+		 appModule.rpt.isopenscore = 'Y';
+			    });
 		},
-			'/std/lis/evltn/TaskStdPage.do' : () =>{
-				  appModule.linkBasicScorePage = function(ordseq,weeklySeq,weeklySubseq) //미제출 상태(제출기간 이전 혹은 이후)
-  {
-      var input = prompt('[과제제출기한 이전 혹은 과제를 미제출하셨습니다.]\n첨부파일을 확인할까요?(y/n)','y');
-      if(input=='y')
-      {
-       appModule.linkInsertPage(ordseq);
-      }
-      else if(input==null)
-          return;
-      else
-      {
-            this.ordseq = ordseq;
-        	this.weeklySeq = weeklySeq;
-        	this.weeklySubSeq = weeklySubseq;
-            //console.log(ordseq,weeklySeq,weeklySubseq);
-        	linkUrl('TaskViewBasicScoreStdPage.do', this.$data);
-      }
-  };
+
+		//동영상 인증 제거 및 출석,온라인 강의리스트 버튼 및 링크 추가
+        '/std/lis/evltn/LctrumHomeStdPage.do' : () =>{
+            var selectedYearHakgi;
+            var subjNm;
+            var GwamokNo;
+            var Year;
+            var Hakgi;
+            var currentNum;
+            var tag = document.getElementsByClassName("title-text");
+            lrnCerti.certiCheck = function(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun){
+
+                appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
+            }
+            appModule.goVideo = function(param){
+                linkUrl('OnlineCntntsStdPage.do',this.$data);
+            }
+            appModule.goQuestion = function(param){
+                linkUrl('/std/lis/sport/573f918c23984ae8a88c398051bb1263/BoardQnaListStdPage.do',this.$data);
+            }
+            appModule.goStudent = function(param){
+                linkUrl('/std/lis/sport/70778131bf7a421aba99dded74b3fb6b/BoardListStdPage.do',this.$data);
+            }
+            appModule.goEval = function(param){
+                linkUrl('/std/cps/inqire/LctreEvlStdPage.do',this.$data);
+            }
+            appModule.goLrnSttus = function(param){
+                linkUrl('/std/lis/evltn/LrnSttusStdPage.do',this.$data);
+            }
+            document.getElementById("appModule").getElementsByTagName("ul")[0].insertAdjacentHTML('beforeend',`<li><a class="question" href="#none"> 강의 묻고답하기 <span class="oval"></span></a></li>`);
+            	$('.question').click(() => {
+			  appModule.goQuestion();
+			});
+            document.getElementById("appModule").getElementsByTagName("ul")[0].insertAdjacentHTML('beforeend',`<li><a class="Eval" href="#none"> 수업평가 <span class="oval"></span></a></li>`);
+            	$('.Eval').click(() => {
+			  appModule.goEval();
+			});
+            document.getElementById("appModule").getElementsByTagName("ul")[1].insertAdjacentHTML('beforeend',`<li><a class="student" href="#none"> 수강생 자료실 <span class="oval"></span></a></li>`);
+            	$('.student').click(() => {
+			  appModule.goStudent();
+			});
+            document.getElementById("appModule").getElementsByTagName("ul")[1].insertAdjacentHTML('beforeend',`<li><a class="LrnSttus" href="#none"> 학습현황 <span class="oval"></span></a></li>`);
+            	$('.LrnSttus').click(() => {
+			  appModule.goLrnSttus();
+			});
+            appHeaderSubj.$watch('selectYearhakgi',function(newVal,oldVal){
+             selectedYearHakgi = appHeaderSubj.$data.selectYearhakgi.split(',');
+             Year = selectedYearHakgi[0];
+             Hakgi = selectedYearHakgi[1];
+             subjNm = appHeaderSubj.subjNm.split('-');
+             GwamokNo = subjNm[2];
+             const params ={'selectYear' : Year,
+                             'selectHakgi' : Hakgi};
+                 axios.post('/std/ads/admst/KwAttendStdGwakmokList.do',params)
+                        .then(function (response) {
+                        if(response.data){
+                            for(let i=0;i<response.data.length;i++)
+                            {
+                                if(response.data[i].openGwamokNo == GwamokNo)
+                                {
+                                    currentNum = response.data[i].currentNum;
+                                    document.querySelector('.subjecttime').innerHTML = ` ${appHeaderSubj.lctrumSchdul}  [수강인원:${currentNum}명 (30%:${(currentNum*0.3).toFixed(0)}명 70%:${(currentNum*0.7).toFixed(0)}명)]`;
+                                }
+                            }
+                        }
+                     }.bind(this));
+            });
+            appHeaderSubj.$watch('subjNm',function(newVal,oldVal){
+             subjNm = appHeaderSubj.subjNm.split('-');
+             GwamokNo = subjNm[2];
+                const params ={'selectYear' : Year,
+                               'selectHakgi' : Hakgi};
+                axios.post('/std/ads/admst/KwAttendStdGwakmokList.do',params)
+                    .then(function (response) {
+                    if(response.data){
+                        for(let i=0;i<response.data.length;i++)
+                        {
+                            if(response.data[i].openGwamokNo == GwamokNo)
+                            {
+                                currentNum = response.data[i].currentNum;
+                                document.querySelector('.subjecttime').innerHTML = ` ${appHeaderSubj.lctrumSchdul}  [수강인원:${currentNum}명 (30%:${(currentNum*0.3).toFixed(0)}명 70%:${(currentNum*0.7).toFixed(0)}명)]`;
+                            }
+                        }
+                    }
+                }.bind(this));
+            });
+
+           
+            tag[2].innerHTML="출석"+ '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
+
+            tag[2].onclick = function()
+            {
+                const param={'selectYear' : Year,
+                             'selectHakgi' : Hakgi};
+                 axios.post('/std/ads/admst/KwAttendStdGwakmokList.do',param)
+                        .then(function (response) {
+                        if(response.data){
+                          for(let i=0;i<response.data.length;i++)
+                            {
+                                if(response.data[i].openGwamokNo == GwamokNo)
+                                {
+                                    const params={
+                                        'selectYear' : Year,
+                                        'selectHakgi' : Hakgi,
+                                        'openMajorCode' : response.data[i].openMajorCode,
+                                        'openGrade' : response.data[i].openGrade,
+                                        'openGwamokNo' : response.data[i].openGwamokNo,
+                                        'bunbanNo' : response.data[i].bunbanNo,
+                                        'gwamokKname' : response.data[i].gwamokKname,
+                                        'codeName1' : response.data[i].codeName1,
+                                        'hakjumNum' : response.data[i].hakjumNum,
+                                        'sisuNum' : response.data[i].sisuNum,
+                                        'memberName' : response.data[i].memberName,
+                                        'currentNum' : response.data[i].currentNum,
+                                        'yoil' : response.data[i].yoil};
+                                    linkUrl('/std/ads/admst/KwAttendListStdPage.do',params);
+                                }
+                            }
+                        }
+
+                    }.bind(this));
+            }
+
+            tag[8].innerHTML = "온라인 강의리스트" + '<a class="more_btn" href="#"><i class="fas fa-list"></i></a>';
+            tag[8].onclick = function()
+            {
+               appModule.goVideo();
+            }
+
         },
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
