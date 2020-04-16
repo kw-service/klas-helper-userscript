@@ -21,6 +21,70 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+	//상담시간 조회 전체목록 확인
+        '/std/hak/cnslt/CnsltTimeStdPage.do' : ()=>{
+            appModule.getData = function(){
+              if(this.searchKeyword == '') {
+                  /*
+        		alert('검색어는 필수 입니다.');
+        		return false;
+                */
+
+        	}
+
+            axios.post('/std/hak/cnslt/CnsltTimeStdList.do', this.$data)
+            .then(function (response) {
+            	this.searchActive = true;
+                this.list = response.data;
+                this.totCnt = response.data.length;
+                this.searchText = this.searchKeyword;
+
+
+                for(var i = 0 ; i < this.totCnt ; i++){
+                	if(this.searchCondition == 'name'){
+                		var textIndex = this.list[i]['kname'].indexOf(this.searchKeyword);
+                		var keyLength = this.searchKeyword.length;
+                		var kname = this.list[i]['kname'];
+
+                		this.list[i]['sameKname'] = kname.substr(textIndex, keyLength);
+                		if(textIndex > 0){
+                			this.list[i]['restFrontKname'] = kname.substr(0, textIndex);
+                		}
+                		this.list[i]['restRearKname'] = kname.substr(textIndex+keyLength);
+                	}else if(this.searchCondition == 'dept'){
+                		var organName = this.list[i]['organName'];
+                		var deptName = this.list[i]['deptName'];
+                		var textIndex = deptName.indexOf(this.searchKeyword);
+                		var textOrganIndex = organName.indexOf(this.searchKeyword);
+                		var keyLength = this.searchKeyword.length;
+                		if(textOrganIndex != -1){
+	                		this.list[i]['sameOrganName'] = organName.substr(textOrganIndex, keyLength);
+                			this.list[i]['restFrontOrganName'] = organName.substr(0, textOrganIndex);
+	                		this.list[i]['restRearOrganName'] = organName.substr(textOrganIndex+keyLength);
+                		}else{
+                			this.list[i]['restFrontOrganName'] = organName;
+                		}
+                		if(textIndex != -1){
+	                		this.list[i]['sameDeptName'] = deptName.substr(textIndex, keyLength);
+                			this.list[i]['restFrontDeptName'] = deptName.substr(0, textIndex);
+	                		this.list[i]['restRearDeptName'] = deptName.substr(textIndex+keyLength);
+                		}else{
+                			this.list[i]['restFrontDeptName'] = deptName;
+                		}
+
+                	}
+                }
+
+                if(this.searchCondition == 'name'){
+            		this.searchConName = true;
+                    this.searchConDept = false;
+            	}else if(this.searchCondition == 'dept'){
+            		this.searchConName = false;
+                    this.searchConDept = true;
+            	}
+            }.bind(this));
+            };
+        },
 	//KW출첵 재학 년도로만 초기화
         '/std/ads/admst/KwAttendStdPage.do' : ()=>{
             var count=0;
