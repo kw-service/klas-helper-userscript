@@ -260,6 +260,9 @@
 				let nowSemester = appModule.$data.selectHakgi;
 				const admissionYear = parseInt(appModule.$data.info[0].hakbun.substring(0, 4));
 
+				// 버튼 숨기기
+				$('.btn-ranking').hide();
+
 				// 비동기 문제로 타이머 사용
 				const syncTimer = setInterval(() => {
 					if (nowSemester === '2') {
@@ -296,9 +299,7 @@
 
 						if (nowYear < admissionYear) {
 							clearInterval(syncTimer);
-
 							alert('석차 정보를 모두 불러왔습니다.');
-							$('.btn-ranking').hide();
 						}
 					}.bind(this));
 				}, 500);
