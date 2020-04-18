@@ -305,6 +305,37 @@
 				}, 500);
 			});
 		},
+		// 강의 종합
+		'/std/lis/evltn/LctrumHomeStdPage.do': () => {
+			// 인증 팝업 무시
+			lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
+				let self = this;
+				self.grcode = grcode;
+				self.subj = subj;
+				self.weeklyseq = weeklyseq;
+				self.gubun = gubun;
+
+				axios.post('/std/lis/evltn/CertiStdCheck.do', self.$data)
+				.then(function (response) {
+					// 디버깅 로그
+					console.log(response)
+					response.data.status = true;
+					if (response.data.status) {
+						if (gubun == 'C') {
+							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
+						} else {
+							gubun = 'C';
+							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
+						}
+					} else {
+						self.displayCertiPopup = true;
+						self.curEmail = response.data.curEmail;
+						self.curMobile = response.data.curMobile;
+						self.otpIssue = response.data.otpIssue;
+					}
+				}.bind(this));
+			}
+		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// 온라인 강의 고유 번호 파싱
