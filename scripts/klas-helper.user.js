@@ -21,6 +21,14 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		   //이전학기 등록내역 조회(납부일자 포함)
+        '/std/hak/erollmnt/TutionEduPage.do' : ()=>{
+          document.querySelector('.tablegw:nth-of-type(2) tr:nth-of-type(1) th:nth-of-type(2)').innerText = "학기 [납부일]";
+          appModule.$watch('list',function(newVal,oldVal){
+            for(let i=0;i<appModule.list.length;i++)
+                appModule.list[i].hakgi = appModule.list[i].hakgi+"학기"+"[" + appModule.list[i].payDate +"]";
+          });
+        },
 		//이전학기 수학계획서 확인
         '/std/egn/cnslt/SuhakPlanStdPage.do' : () =>{
             document.querySelector('b:nth-of-type(1)').innerHTML = `
