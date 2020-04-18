@@ -21,6 +21,60 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		//이전학기 수학계획서 확인
+        '/std/egn/cnslt/SuhakPlanStdPage.do' : () =>{
+            document.querySelector('b:nth-of-type(1)').innerHTML = `
+                <div style="float:left;">
+     해당학기: <select id="year" v-model="selected">
+       `;
+              document.querySelector('b:nth-of-type(1)').insertAdjacentHTML('afterend',`<div style="float:left;">
+        <select id="hakgi" v-model="selected">
+                   <option value='1'>1학기</option>
+                   <option value='2'>2학기</option>
+                </select></div><div style="float:left" align="right">
+<button type="button" class="btn2 btn-lightbrown btn-search" >조회</button>
+<br></br>
+</div>
+       `);
+
+            $('.btn-search').click(() => {
+                appModule.sugangYear = $("#year option:selected").val();
+                appModule.sugangHakgi = $("#hakgi option:selected").val();
+                if(appModule.sugangYear == moment().year())
+                {
+                  if(appModule.sugangHakgi ==2 && parseInt(moment().month()+1) <8)
+                  {
+                    appModule.message = appModule.sugangYear+"년 "+appModule.sugangHakgi+"학기의 수학계획서가 없습니다.";
+                    return;
+                  }
+                }
+                //console.log(moment().year() +" "+ parseInt(moment().month()+1));
+                appModule.getCheck();
+            });
+
+
+            var count=0;
+            var selectYearList =[];
+            if(count==0)
+            {
+             const param = {};
+            axios.post('/std/cps/atnlc/AtnlcYearList.do',param)
+                        .then(function (response) {
+                        if(response.data){
+                           for(let i=0;i<response.data.length;i++)
+                          {
+                           $("#year").append(`<option value='${response.data[i].year}'>${response.data[i].year}학년도</option>`);
+                          }
+                          document.querySelector('b:nth-of-type(1)').append = `</select></div>`;
+                        }
+
+                    }.bind(this));
+             count++;
+            }
+
+
+
+        },
 	//상담시간 조회 전체목록 확인
         '/std/hak/cnslt/CnsltTimeStdPage.do' : ()=>{
             appModule.getData = function(){
