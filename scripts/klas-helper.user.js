@@ -122,19 +122,19 @@
 						const isIncludeF = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0', 'F', 'NP'].includes(grade);
 						const isNotIncludeF = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0'].includes(grade);
 
-						acc[0] += isPass ? credit : 0;											// 취득 학점
-						acc[1] += isMajor && isIncludeF ? changer[grade] * credit : 0;			// 전공 총점 (F 포함)
-						acc[2] += isMajor && isIncludeF ? credit : 0;							// 전공 취득 학점 (F 포함)
-						acc[3] += isMajor && isNotIncludeF ? changer[grade] * credit : 0;		// 전공 총점 (F 미포함)
-						acc[4] += isMajor && isNotIncludeF ? credit : 0;						// 전공 취득 학점 (F 미포함)
-						acc[5] += !isMajor && isIncludeF ? changer[grade] * credit : 0;			// 전공 외 총점 (F 포함)
-						acc[6] += !isMajor && isIncludeF ? credit : 0;							// 전공 외 취득 학점 (F 포함)
-						acc[7] += !isMajor && isNotIncludeF ? changer[grade] * credit : 0;		// 전공 외 총점 (F 미포함)
-						acc[8] += !isMajor && isNotIncludeF ? credit : 0;						// 전공 외 취득 학점 (F 미포함)
-						acc[9] += isIncludeF ? changer[grade] * credit : 0;						// 전공 외 총점 (F 포함)
-						acc[10] += isIncludeF ? credit : 0;										// 전공 외 취득 학점 (F 포함)
-						acc[11] += isNotIncludeF ? changer[grade] * credit : 0;					// 전공 외 총점 (F 미포함)
-						acc[12] += isNotIncludeF ? credit : 0;									// 전공 외 취득 학점 (F 미포함)
+						acc[0] += isPass ? credit : 0;                                          // 취득 학점
+						acc[1] += isMajor && isIncludeF ? changer[grade] * credit : 0;          // 전공 총점 (F 포함)
+						acc[2] += isMajor && isIncludeF ? credit : 0;                           // 전공 취득 학점 (F 포함)
+						acc[3] += isMajor && isNotIncludeF ? changer[grade] * credit : 0;       // 전공 총점 (F 미포함)
+						acc[4] += isMajor && isNotIncludeF ? credit : 0;                        // 전공 취득 학점 (F 미포함)
+						acc[5] += !isMajor && isIncludeF ? changer[grade] * credit : 0;         // 전공 외 총점 (F 포함)
+						acc[6] += !isMajor && isIncludeF ? credit : 0;                          // 전공 외 취득 학점 (F 포함)
+						acc[7] += !isMajor && isNotIncludeF ? changer[grade] * credit : 0;      // 전공 외 총점 (F 미포함)
+						acc[8] += !isMajor && isNotIncludeF ? credit : 0;                       // 전공 외 취득 학점 (F 미포함)
+						acc[9] += isIncludeF ? changer[grade] * credit : 0;                     // 전공 외 총점 (F 포함)
+						acc[10] += isIncludeF ? credit : 0;                                     // 전공 외 취득 학점 (F 포함)
+						acc[11] += isNotIncludeF ? changer[grade] * credit : 0;                 // 전공 외 총점 (F 미포함)
+						acc[12] += isNotIncludeF ? credit : 0;                                  // 전공 외 취득 학점 (F 미포함)
 
 						return acc;
 					}, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
