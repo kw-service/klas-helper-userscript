@@ -52,7 +52,8 @@
                 {
                   if(appModule.sugangHakgi ==2 && parseInt(moment().month()+1) <8)
                   {
-                    appModule.message = appModule.sugangYear+"년 "+appModule.sugangHakgi+"학기의 수학계획서가 없습니다.";
+                    alert(appModule.sugangYear+"년 "+appModule.sugangHakgi+"학기의 수학계획서가 없습니다.");
+                    linkUrl('/std/egn/cnslt/SuhakPlanStdPage.do');
                     return;
                   }
                 }
