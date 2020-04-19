@@ -20,7 +20,7 @@
 
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
-	let externalPathFunctions = {
+	const externalPathFunctions = {
 		// 강의 계획서 조회 - 학부
 		'/std/cps/atnlc/LectrePlanStdPage.do': () => {
 			let waitSearch = false;
@@ -93,107 +93,67 @@
 		},
 		// 수강 및 성적 조회
 		'/std/cps/inqire/AtnlcScreStdPage.do': () => {
-			class GPACalculator {
-				constructor() {
-					this._gradePointChanger = {
-						'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'NP': 0
-					};
-
-					// 취득 학점
-					this._earnedCredit = 0;
-
-					// 평점을 계산하기 위한 변수 (F 포함)
-					this._sumScoreF = 0;
-					this._sumCreditF = 0;
-
-					// 평점을 계산하기 위한 변수 (F 미포함)
-					this._sumScore = 0;
-					this._sumCredit = 0;
-				}
-
-				updateGPA(credit, gradePoint) {
-					// P, R, 그 외 알 수 없는 학점의 경우
-					if (!(gradePoint in this._gradePointChanger)) {
-						if (gradePoint === 'P') this._earnedCredit += credit;
-						return;
-					}
-
-					// F 미포함 계산
-					if (gradePoint !== 'F' || gradePoint !== 'NP') {
-						this._earnedCredit += credit;
-						this._sumScore += credit * this._gradePointChanger[gradePoint];
-						this._sumCredit += credit;
-					}
-
-					// F 포함 계산
-					this._sumScoreF += credit * this._gradePointChanger[gradePoint];
-					this._sumCreditF += credit;
-				}
-
-				getGPA() {
-					let result = {
-						earnedCredit: this._earnedCredit,
-						includeF: this._sumCreditF === 0 ? '-' : floorFixed(this._sumScoreF / this._sumCreditF),
-						notIncludeF: this._sumCredit === 0 ? '-' : floorFixed(this._sumScore / this._sumCredit)
-					};
-
-					return result;
-				}
-			}
-
-			// 평점 계산
 			appModule.$watch('sungjuk', function (newVal, oldVal) {
 				let htmlCode = '';
 				let trCode = '';
 
 				for (let i = newVal.length - 1; i >= 0; i--) {
-					let scoreInfo = newVal[i];
-					let year = scoreInfo.thisYear;
-					let semester = scoreInfo.hakgi;
+					const year = newVal[i].thisYear;
+					const semester = newVal[i].hakgi;
+					const scoreInfo = newVal[i].sungjukList;
 
 					// 계절 학기의 경우 계산에서 제외
 					if (semester > 2) {
 						continue;
 					}
 
-					// 상황별 점수 정보
-					let GPA = new GPACalculator();
-					let majorGPA = new GPACalculator();
-					let notMajorGPA = new GPACalculator();
+					const changer = {
+						'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'P': 0, 'NP': 0
+					};
 
-					for (let subjectInfo of scoreInfo.sungjukList) {
-						let codeName = subjectInfo.codeName1.trim();
-						let credit = parseInt(subjectInfo.hakjumNum);
-						let gradePoint = subjectInfo.getGrade.trim();
+					// 표 순서대로 평점 정보 기록
+					const gpaInfo = scoreInfo.reduce((acc, cur) => {
+						const code = cur.codeName1.trim();
+						const credit = parseInt(cur.hakjumNum);
+						const grade = cur.getGrade.trim();
 
-						// 전공 평점 계산
-						if (codeName[0] === '전') {
-							majorGPA.updateGPA(credit, gradePoint);
-						}
-						// 전공 외 평점 계산
-						else {
-							notMajorGPA.updateGPA(credit, gradePoint);
-						}
+						const isMajor = code[0] === '전';
+						const isPass = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0', 'P'].includes(grade);
+						const isIncludeF = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0', 'F', 'NP'].includes(grade);
+						const isNotIncludeF = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0'].includes(grade);
 
-						// 평균 평점 계산
-						GPA.updateGPA(credit, gradePoint);
+						acc[0] += isPass ? credit : 0;											// 취득 학점
+						acc[1] += isMajor && isIncludeF ? changer[grade] * credit : 0;			// 전공 총점 (F 포함)
+						acc[2] += isMajor && isIncludeF ? credit : 0;							// 전공 취득 학점 (F 포함)
+						acc[3] += isMajor && isNotIncludeF ? changer[grade] * credit : 0;		// 전공 총점 (F 미포함)
+						acc[4] += isMajor && isNotIncludeF ? credit : 0;						// 전공 취득 학점 (F 미포함)
+						acc[5] += !isMajor && isIncludeF ? changer[grade] * credit : 0;			// 전공 외 총점 (F 포함)
+						acc[6] += !isMajor && isIncludeF ? credit : 0;							// 전공 외 취득 학점 (F 포함)
+						acc[7] += !isMajor && isNotIncludeF ? changer[grade] * credit : 0;		// 전공 외 총점 (F 미포함)
+						acc[8] += !isMajor && isNotIncludeF ? credit : 0;						// 전공 외 취득 학점 (F 미포함)
+						acc[9] += isIncludeF ? changer[grade] * credit : 0;						// 전공 외 총점 (F 포함)
+						acc[10] += isIncludeF ? credit : 0;										// 전공 외 취득 학점 (F 포함)
+						acc[11] += isNotIncludeF ? changer[grade] * credit : 0;					// 전공 외 총점 (F 미포함)
+						acc[12] += isNotIncludeF ? credit : 0;									// 전공 외 취득 학점 (F 미포함)
+
+						return acc;
+					}, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+					// 평점 계산
+					for (let i = 1; i < gpaInfo.length; i += 2) {
+						gpaInfo[i] = gpaInfo[i + 1] > 0 ? floorFixed(gpaInfo[i] / gpaInfo[i + 1]) : '-';
 					}
-
-					// 계산 결과 반영
-					GPA = GPA.getGPA();
-					majorGPA = majorGPA.getGPA();
-					notMajorGPA = notMajorGPA.getGPA();
 
 					trCode += `
 						<tr>
 							<td>${year}학년도 ${semester}학기</td>
-							<td>${GPA.earnedCredit}</td>
-							<td>${majorGPA.includeF}</td>
-							<td>${majorGPA.notIncludeF}</td>
-							<td>${notMajorGPA.includeF}</td>
-							<td>${notMajorGPA.notIncludeF}</td>
-							<td>${GPA.includeF}</td>
-							<td>${GPA.notIncludeF}</td>
+							<td>${gpaInfo[0]}</td>
+							<td>${gpaInfo[1]}</td>
+							<td>${gpaInfo[3]}</td>
+							<td>${gpaInfo[5]}</td>
+							<td>${gpaInfo[7]}</td>
+							<td>${gpaInfo[9]}</td>
+							<td>${gpaInfo[11]}</td>
 						</tr>
 					`;
 				}
@@ -234,15 +194,7 @@
 				`;
 
 				// 평점 정보 렌더링
-				let tableList = document.querySelectorAll('#hakbu > table');
-				let divElement = createTag('div', `<br>${htmlCode}<br>`);
-
-				for (let i = 0; i < tableList.length; i++) {
-					if (parseInt(tableList[i].getAttribute('width')) === 100) {
-						tableList[i].before(divElement);
-						break;
-					}
-				}
+				document.querySelector('table[width="100%"]').before(createTag('div', `<br>${htmlCode}<br>`));
 			});
 		},
 		// 석차 조회
@@ -315,38 +267,50 @@
 				self.weeklyseq = weeklyseq;
 				self.gubun = gubun;
 
-				axios.post('/std/lis/evltn/CertiStdCheck.do', self.$data)
-				.then(function (response) {
-					// 디버깅 로그
-					console.log(response)
-					response.data.status = true;
-					if (response.data.status) {
-						if (gubun == 'C') {
-							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-						} else {
-							gubun = 'C';
-							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-						}
-					} else {
-						self.displayCertiPopup = true;
-						self.curEmail = response.data.curEmail;
-						self.curMobile = response.data.curMobile;
-						self.otpIssue = response.data.otpIssue;
-					}
+				axios.post('/std/lis/evltn/CertiStdCheck.do', self.$data).then(function (response) {
+					appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 				}.bind(this));
-			}
+			};
 		},
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
+			// 2분 쿨타임 제거
+			$('#appModule > table:not(#prjctList) > tbody').append(`
+				<tr>
+					<td>
+						<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
+						<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
+					</td>
+				</tr>
+			`);
+
+			$('.btn-cooldown').click(() => {
+				appModule.getLrnSttus = function (param) {
+					let self = this;
+					axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
+						self.lrnSttus = response.data;
+						let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+						$("#viewForm").prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+						popup.focus();
+					}.bind(this));
+				};
+
+				alert('2분 쿨타임이 제거되었습니다.');
+			});
+
+			// 저작권 안내 문구 렌더링
+			$('#appModule > table:not(#prjctList) > tbody').append(`
+				<tr>
+					<td>
+						<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
+					</td>
+				</tr>
+			`);
+
 			// 온라인 강의 고유 번호 파싱
 			appModule.$watch('list', function (newVal, oldVal) {
-				let videoCodes = [];
+				const videoCodes = [];
 				let videoCount = 0;
-
-				// 디버깅을 위한 로그
-				if (newVal.length > 0) {
-					console.log(JSON.stringify(newVal));
-				}
 
 				for (let i = 0; i < newVal.length; i++) {
 					videoCount += newVal[i].hasOwnProperty('starting');
@@ -404,39 +368,6 @@
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(6)').setAttribute('width', '5%');
 			document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
 
-			// 2분 쿨타임 제거
-			$('#appModule > table:not(#prjctList) > tbody').append(`
-				<tr>
-					<td>
-						<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
-						<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
-					</td>
-				</tr>
-			`);
-
-			$('.btn-cooldown').click(() => {
-				appModule.getLrnSttus = function (param) {
-					let self = this;
-					axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
-						self.lrnSttus = response.data;
-						let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
-						$("#viewForm").prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
-						popup.focus();
-					}.bind(this));
-				};
-
-				alert('2분 쿨타임이 제거되었습니다.');
-			});
-
-			// 저작권 안내 문구 렌더링
-			$('#appModule > table:not(#prjctList) > tbody').append(`
-				<tr>
-					<td>
-						<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
-					</td>
-				</tr>
-			`);
-
 			// 인증 팝업 무시
 			lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 				let self = this;
@@ -445,46 +376,28 @@
 				self.weeklyseq = weeklyseq;
 				self.gubun = gubun;
 
-				axios.post('/std/lis/evltn/CertiStdCheck.do', self.$data)
-				.then(function (response) {
-					// 디버깅 로그
-					console.log(response)
-					response.data.status = true;
-					if (response.data.status) {
-						if (gubun == 'C') {
-							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-						} else {
-							gubun = 'C';
-							appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-						}
-					} else {
-						self.displayCertiPopup = true;
-						self.curEmail = response.data.curEmail;
-						self.curMobile = response.data.curMobile;
-						self.otpIssue = response.data.otpIssue;
-					}
+				axios.post('/std/lis/evltn/CertiStdCheck.do', self.$data).then(function (response) {
+					appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 				}.bind(this));
-			}
+			};
 		}
 	};
 
 	// 태그에 삽입되지 않는 함수 목록
 	// GM 기능을 사용하기 위해 유저 스크립트 내부의 함수가 필요
-	let internalPathFunctions = {
+	const internalPathFunctions = {
 		// 온라인 강의 컨텐츠 보기
 		'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 			// MutationObserver 삽입
-			let observer = new MutationObserver(function (mutationList, observer) {
+			const observer = new MutationObserver(function (mutationList, observer) {
 				// table 태그에 저장한 고유 번호 파싱
-				let videoCodes = JSON.parse(mutationList[0].target.dataset.videoCodes);
+				const videoCodes = JSON.parse(mutationList[0].target.dataset.videoCodes);
 
 				// 이미 생성된 다운로드 버튼 제거
-				document.querySelectorAll('.btn-download').forEach(function (item) {
-					item.style.display = 'none';
-				});
+				$('.btn-download').hide();
 
 				// 동영상 XML 정보 획득
-				for (let videoInfo of videoCodes) {
+				for (const videoInfo of videoCodes) {
 					GM.xmlHttpRequest({
 						method: 'GET',
 						url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoInfo.videoCode,
@@ -500,7 +413,7 @@
 								else {
 									const mediaURI = documentXML.getElementsByTagName('media_uri')[0].innerHTML;
 
-									for (let videoName of documentXML.getElementsByTagName('main_media')) {
+									for (const videoName of documentXML.getElementsByTagName('main_media')) {
 										videoURLs.push(mediaURI.replace('[MEDIA_FILE]', videoName.innerHTML));
 									}
 								}
@@ -543,14 +456,14 @@
 	));
 
 	// externalPathFunctions 함수 삽입
-	for (let path in externalPathFunctions) {
+	for (const path in externalPathFunctions) {
 		if (path === location.pathname) {
 			document.head.appendChild(createTag('script', `(${externalPathFunctions[path].toString()})();`));
 		}
 	}
 
 	// internalPathFunctions 함수 실행
-	for (let path in internalPathFunctions) {
+	for (const path in internalPathFunctions) {
 		if (path === location.pathname) {
 			internalPathFunctions[path]();
 		}
@@ -564,14 +477,14 @@ function consoleError(error, info) {
 
 // 태그 생성
 function createTag(tagName, htmlCode) {
-	let tagElement = document.createElement(tagName);
+	const tagElement = document.createElement(tagName);
 	tagElement.innerHTML = htmlCode;
 	return tagElement;
 }
 
 // 소수점 버림 함수
 function floorFixed(number, decimalPlace = 2) {
-	let pow10 = 10 ** decimalPlace;
+	const pow10 = 10 ** decimalPlace;
 	return (Math.floor(number * pow10) / pow10).toFixed(decimalPlace);
 }
 
