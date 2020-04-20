@@ -21,6 +21,112 @@
 	// 태그에 삽입되는 함수 목록
 	// 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 	let externalPathFunctions = {
+		
+        //일정관리 테이블 수정
+        '/std/ads/admst/MySchdulPage.do' : ()=>{
+            var count=0;
+            var state=1;
+            var origin = [];
+            var before = [];
+            var after = [];
+            var today = (moment().format('YYYY-MM-DD'));
+            document.querySelector('.fc-prev-button').onclick = function() {
+                count=0;
+            };
+            document.querySelector('.fc-next-button').onclick = function(){
+                count=0;
+            };
+            document.querySelector('.fc-button-primary').onclick = function(){
+                count=0;
+            }
+            appModule.$watch('list',function(newVal,oldVal){
+
+                if(count==0)
+                {
+                    if(parseInt(appModule.list[0].schdulDt.substr(5,2)) < moment().month()+1)
+                    {
+                        $('.btn-All').hide();
+                        $('.btn-After').hide();
+                    }
+                    else if(parseInt(appModule.list[0].schdulDt.substr(5,2)) == moment().month()+1)
+                    {
+                        $('.btn-All').show();
+                        $('.btn-Before').show();
+                        $('.btn-After').show();
+                    }
+                    else
+                    {
+                        $('.btn-All').hide();
+                        $('.btn-Before').hide();
+                    }
+                    while(origin.length>0)
+                        origin.pop();
+                    while(before.length>0)
+                        before.pop();
+                    while(after.length>0)
+                        after.pop();
+                    for(let i=0;i<appModule.list.length;i++)
+                    {
+
+                        origin[i] = appModule.list[i];
+
+                        if(appModule.list[i].schdulDt < today)
+                        {
+                            before.push(appModule.list[i]);
+                        }
+                        else
+                        {
+                            after.push(appModule.list[i]);
+                        }
+
+                    }
+                    count++;
+                }
+
+            });
+
+            $('#tableTest').before(`
+<div style="margin-top: 10px" align="left">
+<button type="button" class="btn2 btn-darkblue btn-All" > 전체 일정</button>
+<button type="button" class="btn2 btn-blue2 btn-Before" > 지난 일정</button>
+<button type="button" class="btn2 btn-lightpurple btn-After" > 남은 일정</button>
+</div>
+
+`);
+            $('.btn-All').click(() => {
+                const syncTimer = setInterval(() => {
+                    while(appModule.list.length>0)
+                        appModule.list.pop();
+                    for(let i=0;i<origin.length;i++)
+                        appModule.list.push(origin[i]);
+                    clearInterval(syncTimer);
+                }, 10);
+            });
+
+            $('.btn-Before').click(() => {
+                const syncTimer = setInterval(() => {
+                    while(appModule.list.length>0)
+                        appModule.list.pop();
+                    for(let i=0;i<before.length;i++)
+                    {
+                        appModule.list.push(before[i]);
+                    }
+                    clearInterval(syncTimer);
+                }, 10);
+            });
+            $('.btn-After').click(() => {
+                const syncTimer = setInterval(() => {
+                    while(appModule.list.length>0)
+                        appModule.list.pop();
+                    for(let i=0;i<after.length;i++)
+                    {
+                        appModule.list.push(after[i]);
+                    }
+                    clearInterval(syncTimer);
+                }, 10);
+
+            });
+        },
 		   //이전학기 등록내역 조회(납부일자 포함)
         '/std/hak/erollmnt/TutionEduPage.do' : ()=>{
           document.querySelector('.tablegw:nth-of-type(2) tr:nth-of-type(1) th:nth-of-type(2)').innerText = "학기 [납부일]";
@@ -169,7 +275,7 @@
              count++;
             }
         },
- //선수 교과목 이수현황 선택형으로 조회
+ 	//선수 교과목 이수현황 선택형으로 조회
         '/std/egn/chck/BeforeSbjectStdPage.do' : ()=>{
             const syncTimer = setInterval(() => {
 					const param = {};
@@ -230,7 +336,7 @@
            });
 
         },
-	  //이번 학기 포트폴리오 오류 수정
+	  //이번 학기 포트폴리오 류 수정
         '/std/egn/chck/PrtFolioSugangStdPage.do' : ()=> {
           appModule.$watch('sungjuk',function(newVal,oldVal){
             let tableList = document.querySelectorAll('#appModule > table');
@@ -527,10 +633,7 @@
             var Hakgi;
             var currentNum;
             var tag = document.getElementsByClassName("title-text");
-            lrnCerti.certiCheck = function(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun){
-
-                appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
-            }
+           
             appModule.goVideo = function(param){
                 linkUrl('OnlineCntntsStdPage.do',this.$data);
             }
