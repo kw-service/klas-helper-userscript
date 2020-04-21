@@ -139,6 +139,10 @@
 						return acc;
 					}, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
+					if (gpaInfo[0] === 0) {
+						gpaInfo[0] = '-';
+					}
+
 					// 평점 계산
 					for (let i = 1; i < gpaInfo.length; i += 2) {
 						gpaInfo[i] = gpaInfo[i + 1] > 0 ? floorFixed(gpaInfo[i] / gpaInfo[i + 1]) : '-';
