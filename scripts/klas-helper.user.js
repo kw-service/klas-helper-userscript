@@ -137,7 +137,7 @@
 						acc[12] += isNotIncludeF ? credit : 0;                                  // 전체 취득 학점 (F 미포함)
 
 						return acc;
-					}, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+					}, Array(13).fill(0));
 
 					if (gpaInfo[0] === 0) {
 						gpaInfo[0] = '-';
