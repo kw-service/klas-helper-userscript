@@ -177,9 +177,10 @@ const externalPathFunctions = {
 			let htmlCode = '';
 			let trCode = '';
 
-			const changer = {
-				'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'P': 0, 'NP': 0
-			};
+			const labelList = [];
+			const majorScoreList = [];
+			const notMajorScoreList = [];
+			const allScoreList = [];
 
 			for (let i = watchValue.length - 1; i >= 0; i--) {
 				const year = watchValue[i].thisYear;
@@ -191,6 +192,10 @@ const externalPathFunctions = {
 
 				// 표 순서대로 평점 정보 기록
 				const gpaInfo = scoreInfo.reduce((acc, cur) => {
+					const changer = {
+						'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'P': 0, 'NP': 0
+					};
+
 					const code = cur.codeName1.trim();
 					const credit = parseInt(cur.hakjumNum);
 					const grade = cur.getGrade.trim();
@@ -238,6 +243,14 @@ const externalPathFunctions = {
 						<td>${gpaInfo[11]}</td>
 					</tr>
 				`;
+
+				// 차트 데이터 생성
+				if (gpaInfo[0] !== '-') {
+					labelList.push([`${year}학년도`, `${semester}학기`]);
+					majorScoreList.push(gpaInfo[1]);
+					notMajorScoreList.push(gpaInfo[5]);
+					allScoreList.push(gpaInfo[9]);
+				}
 			}
 
 			htmlCode += `
@@ -277,6 +290,76 @@ const externalPathFunctions = {
 
 			// 평점 정보 렌더링
 			document.querySelector('table[width="100%"]').before(createElement('div', `<br>${htmlCode}<br>`));
+
+			// 차트를 그릴 canvas 생성
+			document.querySelector('table[width="100%"]').before(createElement('div', `
+				<div style="margin-bottom: 20px">
+					<canvas id="chart-score"></canvas>
+				</div>
+			`));
+
+			// canvas 설정
+			const ctx = document.getElementById('chart-score');
+			ctx.height = 80;
+
+			// 차트 그리기
+			const chart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: labelList,
+					datasets: [
+						{
+							label: '전공 평점',
+							data: majorScoreList,
+							borderColor: '#E74C3C',
+							borderWidth: 1,
+							fill: false,
+							lineTension: 0,
+							pointBackgroundColor: 'white',
+							pointRadius: 5
+						},
+						{
+							label: '전공 외 평점',
+							data: notMajorScoreList,
+							borderColor: '#2980B9',
+							borderWidth: 1,
+							fill: false,
+							lineTension: 0,
+							pointBackgroundColor: 'white',
+							pointRadius: 5
+						},
+						{
+							label: '평균 평점',
+							data: allScoreList,
+							borderColor: '#BDC3C7',
+							borderWidth: 2,
+							fill: false,
+							lineTension: 0,
+							pointBackgroundColor: 'white',
+							pointRadius: 5
+						}
+					]
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								suggestedMin: 2,
+								suggestedMax: 4.5,
+								stepSize: 0.5
+							}
+						}]
+					},
+					tooltips: {
+						callbacks: {
+							title: (tooltipItem, data) => {
+								const xLabel = tooltipItem[0].xLabel;
+								return xLabel[0] + ' ' + xLabel[1];
+							}
+						}
+					}
+				}
+			});
 		});
 	},
 	// 석차 조회
