@@ -56,6 +56,17 @@ function consoleError(error, info) {
 (function () {
 	'use strict';
 
+	const externalLibs = [
+		'https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js'
+	];
+
+	// 외부 라이브러리 삽입
+	for (const src of externalLibs) {
+		const scriptElement = document.createElement('script');
+		scriptElement.setAttribute('src', src);
+		document.head.appendChild(scriptElement);
+	}
+
 	// 기본 함수 삽입
 	document.head.appendChild(createElement('script',
 		createElement.toString() +
