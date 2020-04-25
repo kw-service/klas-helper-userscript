@@ -291,75 +291,75 @@ const externalPathFunctions = {
 			// 평점 정보 렌더링
 			document.querySelector('table[width="100%"]').before(createElement('div', `<br>${htmlCode}<br>`));
 
-			// 차트를 그릴 canvas 생성
-			document.querySelector('table[width="100%"]').before(createElement('div', `
-				<div style="margin-bottom: 20px">
-					<canvas id="chart-score"></canvas>
-				</div>
-			`));
+			// 평점 차트 그리기
+			if (labelList.length > 0) {
+				document.querySelector('table[width="100%"]').before(createElement('div', `
+					<div style="margin-bottom: 20px">
+						<canvas id="chart-score"></canvas>
+					</div>
+				`));
 
-			// canvas 설정
-			const ctx = document.getElementById('chart-score');
-			ctx.height = 80;
+				const ctx = document.getElementById('chart-score');
+				ctx.height = 80;
 
-			// 차트 그리기
-			const chart = new Chart(ctx, {
-				type: 'line',
-				data: {
-					labels: labelList,
-					datasets: [
-						{
-							label: '전공 평점',
-							data: majorScoreList,
-							borderColor: '#E74C3C',
-							borderWidth: 1,
-							fill: false,
-							lineTension: 0,
-							pointBackgroundColor: 'white',
-							pointRadius: 5
-						},
-						{
-							label: '전공 외 평점',
-							data: notMajorScoreList,
-							borderColor: '#2980B9',
-							borderWidth: 1,
-							fill: false,
-							lineTension: 0,
-							pointBackgroundColor: 'white',
-							pointRadius: 5
-						},
-						{
-							label: '평균 평점',
-							data: allScoreList,
-							borderColor: '#BDC3C7',
-							borderWidth: 2,
-							fill: false,
-							lineTension: 0,
-							pointBackgroundColor: 'white',
-							pointRadius: 5
-						}
-					]
-				},
-				options: {
-					scales: {
-						yAxes: [{
-							ticks: {
-								suggestedMin: 2,
-								suggestedMax: 4.5,
-								stepSize: 0.5
+				const chart = new Chart(ctx, {
+					type: 'line',
+					data: {
+						labels: labelList,
+						datasets: [
+							{
+								label: '전공 평점',
+								data: majorScoreList,
+								borderColor: '#E74C3C',
+								borderWidth: 1,
+								fill: false,
+								lineTension: 0,
+								pointBackgroundColor: 'white',
+								pointRadius: 5
+							},
+							{
+								label: '전공 외 평점',
+								data: notMajorScoreList,
+								borderColor: '#2980B9',
+								borderWidth: 1,
+								fill: false,
+								lineTension: 0,
+								pointBackgroundColor: 'white',
+								pointRadius: 5
+							},
+							{
+								label: '평균 평점',
+								data: allScoreList,
+								borderColor: '#BDC3C7',
+								borderWidth: 2,
+								fill: false,
+								lineTension: 0,
+								pointBackgroundColor: 'white',
+								pointRadius: 5
 							}
-						}]
+						]
 					},
-					tooltips: {
-						callbacks: {
-							title: (tooltipItem, data) => {
-								const xLabel = tooltipItem[0].xLabel;
-								return xLabel[0] + ' ' + xLabel[1];
+					options: {
+						scales: {
+							yAxes: [{
+								ticks: {
+									suggestedMin: 2,
+									suggestedMax: 4.5,
+									stepSize: 0.5
+								}
+							}]
+						},
+						tooltips: {
+							callbacks: {
+								title: (tooltipItem, data) => {
+									const xLabel = tooltipItem[0].xLabel;
+									return xLabel[0] + ' ' + xLabel[1];
+								}
 							}
 						}
 					}
-				}
-			});
+				});
+			}
 		});
 	},
 	// 석차 조회
