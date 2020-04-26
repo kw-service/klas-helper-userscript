@@ -227,8 +227,8 @@ const externalPathFunctions = {
 				}
 
 				// 평점 계산
-				for (let i = 1; i < gpaInfo.length; i += 2) {
-					gpaInfo[i] = gpaInfo[i + 1] > 0 ? floorFixed(gpaInfo[i] / gpaInfo[i + 1]) : '-';
+				for (let j = 1; j < gpaInfo.length; j += 2) {
+					gpaInfo[j] = gpaInfo[j + 1] > 0 ? floorFixed(gpaInfo[j] / gpaInfo[j + 1]) : '-';
 				}
 
 				trCode += `
