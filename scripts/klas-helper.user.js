@@ -559,7 +559,9 @@ const internalPathFunctions = {
 			const videoCodes = JSON.parse(mutationList[0].target.dataset.videoCodes);
 
 			// 이미 생성된 다운로드 버튼 제거
-			$('.btn-download').hide();
+			document.querySelectorAll('.btn-download').forEach(function (item) {
+				item.style.display = 'none';
+			});
 
 			// 동영상 XML 정보 획득
 			for (const videoInfo of videoCodes) {
