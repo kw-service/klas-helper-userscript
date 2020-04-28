@@ -153,6 +153,13 @@ const externalPathFunctions = {
 
 		// 안내 문구 렌더링
 		document.querySelector('table:nth-of-type(1) tr:nth-of-type(5) td').innerText = '인증 코드를 입력하실 필요가 없습니다.';
+
+		// 엔터로 강의 계획서 검색
+		$('table:nth-of-type(1) input[type="text"]').keydown((event) => {
+			if (event.keyCode === 13) {
+				appModule.getSearch();
+			}
+		});
 	},
 	// 강의 계획서 조회 - 대학원
 	'/std/cps/atnlc/LectrePlanGdhlStdPage.do': () => {
