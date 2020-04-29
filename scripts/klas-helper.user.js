@@ -432,6 +432,7 @@ const externalPathFunctions = {
 	// 강의 종합
 	'/std/lis/evltn/LctrumHomeStdPage.do': () => {
 		// 인증 팝업 무시
+		/*
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			let self = this;
 			self.grcode = grcode;
@@ -443,6 +444,7 @@ const externalPathFunctions = {
 				appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 			}.bind(this));
 		};
+		*/
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
@@ -480,6 +482,7 @@ const externalPathFunctions = {
 		`);
 
 		// 인증 팝업 무시
+		/*
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			let self = this;
 			self.grcode = grcode;
@@ -491,6 +494,7 @@ const externalPathFunctions = {
 				appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 			}.bind(this));
 		};
+		*/
 
 		// 온라인 강의 고유 번호 파싱
 		/*
