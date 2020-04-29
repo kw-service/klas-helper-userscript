@@ -493,6 +493,7 @@ const externalPathFunctions = {
 		};
 
 		// 온라인 강의 고유 번호 파싱
+		/*
 		appModule.$watch('list', function (watchValue) {
 			const videoCodes = [];
 			let videoCount = 0;
@@ -548,6 +549,77 @@ const externalPathFunctions = {
 				}
 			}, 100);
 		});
+		*/
+
+		// 2분 쿨타임 제거
+		$('#appModule > table:not(#prjctList) > tbody').append(`
+			<tr>
+				<td>
+					<div style="margin-bottom: 5px">※ 갑작스럽게 사용자 수가 급증하는 관계로 서버에 부담을 주지 않기 위해 아래 버튼을 눌러야만 다운로드 버튼이 생기도록 수정합니다. 양해 부탁드립니다. 조만간 해결하겠습니다.</div>
+					<button type="button" class="btn2 btn-learn btn-lecture-down">인강 다운로드 버튼 생성</button>
+				</td>
+			</tr>
+		`);
+
+		$('.btn-lecture-down').click(() => {
+			$('.btn-lecture-down').hide();
+
+			const videoCodes = [];
+			let videoCount = 0;
+			const watchValue = appModule.$data.list;
+
+			for (let i = 0; i < watchValue.length; i++) {
+				videoCount += watchValue[i].hasOwnProperty('starting');
+			}
+
+			for (let i = 0; i < watchValue.length; i++) {
+				const videoInfo = watchValue[i];
+				let	videoCode = '';
+
+				if (!videoInfo.hasOwnProperty('starting')) {
+					continue;
+				}
+
+				// 예외인 고유 번호는 직접 파싱해서 처리
+				if (videoInfo.starting === null || videoInfo.starting === 'default.htm') {
+					const postData = [];
+					for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
+
+					axios.post('/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do', postData.join('&')).then(function (response) {
+						if (response.data.indexOf('kwcommons.kw.ac.kr/em/') === -1) {
+							videoCode = undefined;
+						}
+						else {
+							videoCode = response.data.split('kwcommons.kw.ac.kr/em/')[1].split('"')[0];
+						}
+					});
+				}
+				else {
+					videoCode = videoInfo.starting.split('/');
+					videoCode = videoCode[videoCode.length - 1];
+				}
+
+				const syncTimer = setInterval(() => {
+					if (videoCode === undefined) {
+						videoCount--;
+						clearInterval(syncTimer);
+					}
+					else if (videoCode !== '') {
+						videoCodes.push({ index: i, videoCode });
+						clearInterval(syncTimer);
+					}
+				}, 100);
+			}
+
+			// table 태그에 고유 번호 저장
+			const syncTimer = setInterval(() => {
+				if (videoCount === videoCodes.length) {
+					document.querySelector('#prjctList').setAttribute('data-video-codes', JSON.stringify(videoCodes));
+					clearInterval(syncTimer);
+				}
+			}, 100);
+		});
+
 
 		// 표 디자인 수정
 		document.querySelector('#prjctList > colgroup > col:nth-of-type(6)').setAttribute('width', '5%');
