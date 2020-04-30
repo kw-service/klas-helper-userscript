@@ -17,7 +17,9 @@
 
 // JavaScript 파일 캐시 문제 해결
 function jsCache(filePath) {
-	return filePath + '?v=' + String(Math.floor(Math.random() * 99999)).padStart(5, '0');
+	const nowDate = new Date();
+	const cacheValue = nowDate.getYear() + nowDate.getMonth() + nowDate.getDay() + nowDate.getHours() + nowDate.getMinutes();
+	return filePath + '?v=' + cacheValue;
 }
 
 (function () {
