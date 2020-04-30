@@ -156,7 +156,16 @@ const externalPathFunctions = {
 	},
 	// 수강 및 성적 조회
 	'/std/cps/inqire/AtnlcScreStdPage.do': () => {
-		appModule.$watch('sungjuk', (watchValue) => {
+		const scoreTimer = setInterval(() => {
+			if (!appModule) {
+				return;
+			}
+
+			if (appModule.$data.sungjuk.length === 0) {
+				return;
+			}
+
+			const scoreDatas = appModule.$data.sungjuk;
 			let htmlCode = '';
 			let trCode = '';
 
@@ -165,10 +174,10 @@ const externalPathFunctions = {
 			const notMajorScoreList = [];
 			const allScoreList = [];
 
-			for (let i = watchValue.length - 1; i >= 0; i--) {
-				const year = watchValue[i].thisYear;
-				const semester = watchValue[i].hakgi;
-				const scoreInfo = watchValue[i].sungjukList;
+			for (let i = scoreDatas.length - 1; i >= 0; i--) {
+				const year = scoreDatas[i].thisYear;
+				const semester = scoreDatas[i].hakgi;
+				const scoreInfo = scoreDatas[i].sungjukList;
 
 				// 계절 학기의 경우 계산에서 제외
 				if (semester > 2) continue;
@@ -343,7 +352,9 @@ const externalPathFunctions = {
 					}
 				});
 			}
-		});
+
+			clearInterval(scoreTimer);
+		}, 100);
 	},
 	// 석차 조회
 	'/std/cps/inqire/StandStdPage.do': () => {
