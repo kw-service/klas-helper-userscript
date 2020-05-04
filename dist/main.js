@@ -153,6 +153,13 @@ const externalPathFunctions = {
 
 		// 안내 문구 렌더링
 		document.querySelector('table:nth-of-type(1) tr:nth-of-type(4) td').innerText = '인증 코드를 입력하실 필요가 없습니다.';
+
+		// 엔터로 강의 계획서 검색
+		$('table:nth-of-type(1) input[type="text"]').keydown((event) => {
+			if (event.keyCode === 13) {
+				appModule.getSearch();
+			}
+		});
 	},
 	// 수강 및 성적 조회
 	'/std/cps/inqire/AtnlcScreStdPage.do': () => {
@@ -434,24 +441,34 @@ const externalPathFunctions = {
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
-		// 2분 쿨타임 제거
+		// 2분 쿨타임 제거 버튼 생성
 		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr>
-				<td>
-					<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
-					<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
-				</td>
-			</tr>
+			<tr><td>
+				<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
+				<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
+			</td></tr>
 		`);
 
+		// 2분 쿨타임 제거 버튼에 이벤트 설정
 		$('.btn-cooldown').click(() => {
 			appModule.getLrnSttus = function (param) {
 				let self = this;
 				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
 					self.lrnSttus = response.data;
-					let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
-					$("#viewForm").prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
-					popup.focus();
+
+					if (response.data === 'Y' || response.data === 'N') {
+						if (ios) {
+							$('#viewForm').prop('target', '_blank').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit();
+						}
+						else {
+							let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+							$('#viewForm').prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+							popup.focus();
+						}
+					}
+					else if (response.request.responseURL.includes('LoginForm.do')){
+						linkUrl(response.request.responseURL);
+					}
 				}.bind(this));
 			};
 
@@ -468,7 +485,6 @@ const externalPathFunctions = {
 		`);
 
 		// 인증 팝업 무시
-		
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			console.log(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun);
 			let self = this;
