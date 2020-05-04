@@ -441,15 +441,16 @@ const externalPathFunctions = {
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
-		// 2분 쿨타임 제거
+		// 2분 쿨타임 제거 버튼 생성
 		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr>
-				<td>
-					<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
-					<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
-				</td>
-			</tr>
-		`).click(() => {
+			<tr><td>
+				<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
+				<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
+			</td></tr>
+		`);
+
+		// 2분 쿨타임 제거 버튼에 이벤트 설정
+		$('.btn-cooldown').click(() => {
 			appModule.getLrnSttus = function (param) {
 				let self = this;
 				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
