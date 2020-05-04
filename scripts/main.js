@@ -58,20 +58,15 @@ function consoleError(error, info) {
 		document.head.appendChild(scriptElement);
 	}
 
-	// 이미 window.onload 이벤트가 존재하는지 체크
-	const onloadFunction = window.onload ? window.onload : (() => {});
-
 	// window.onload 설정
-	window.onload = () => {
-		onloadFunction();
-
+	window.addEventListener('load', () => {
 		// externalPathFunctions 함수 삽입
 		for (const path in externalPathFunctions) {
 			if (path === location.pathname) {
 				document.head.appendChild(createElement('script', `(${externalPathFunctions[path].toString()})();`));
 			}
 		}
-	};
+	});
 })();
 
 // 태그에 삽입되는 함수 목록
