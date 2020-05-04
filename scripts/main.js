@@ -449,16 +449,25 @@ const externalPathFunctions = {
 					<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
 				</td>
 			</tr>
-		`);
-
-		$('.btn-cooldown').click(() => {
+		`).click(() => {
 			appModule.getLrnSttus = function (param) {
 				let self = this;
 				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
 					self.lrnSttus = response.data;
-					let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
-					$("#viewForm").prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
-					popup.focus();
+
+					if (response.data === 'Y' || response.data === 'N') {
+						if (ios) {
+							$('#viewForm').prop('target', '_blank').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit();
+						}
+						else {
+							let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+							$('#viewForm').prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+							popup.focus();
+						}
+					}
+					else if (response.request.responseURL.includes('LoginForm.do')){
+						linkUrl(response.request.responseURL);
+					}
 				}.bind(this));
 			};
 
@@ -475,7 +484,6 @@ const externalPathFunctions = {
 		`);
 
 		// 인증 팝업 무시
-		
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			console.log(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun);
 			let self = this;
