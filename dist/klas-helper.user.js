@@ -31,20 +31,15 @@ function jsCache(filePath) {
 	scriptElement.setAttribute('src', jsCache('https://nbsp1221.github.io/klas-helper/dist/main.js'));
 	document.head.appendChild(scriptElement);
 
-	// 이미 window.onload 이벤트가 존재하는지 체크
-	const onloadFunction = window.onload ? window.onload : (() => {});
-
 	// window.onload 설정
-	window.onload = () => {
-		onloadFunction();
-
+	window.addEventListener('load', () => {
 		// internalPathFunctions 함수 실행
 		for (const path in internalPathFunctions) {
 			if (path === location.pathname) {
 				internalPathFunctions[path]();
 			}
 		}
-	};
+	});
 })();
 
 // 태그에 삽입되지 않는 함수 목록
