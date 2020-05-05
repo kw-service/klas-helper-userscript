@@ -25,23 +25,18 @@ function jsCache(filePath) {
 	// 메인 파일 삽입
 	// 업데이트 시 즉각적으로 업데이트를 반영하기 위해 이러한 방식을 사용함
 	const scriptElement = document.createElement('script');
-	scriptElement.setAttribute('src', jsCache('https://nbsp1221.github.io/klas-helper/scripts/main.js'));
+	scriptElement.src = jsCache('https://nbsp1221.github.io/klas-helper/scripts/main.js');
 	document.head.appendChild(scriptElement);
 
-	// 이미 window.onload 이벤트가 존재하는지 체크
-	const onloadFunction = window.onload ? window.onload : (() => {});
-
 	// window.onload 설정
-	window.onload = () => {
-		onloadFunction();
-
+	window.addEventListener('load', () => {
 		// internalPathFunctions 함수 실행
 		for (const path in internalPathFunctions) {
 			if (path === location.pathname) {
 				internalPathFunctions[path]();
 			}
 		}
-	};
+	});
 })();
 
 // 태그에 삽입되지 않는 함수 목록
