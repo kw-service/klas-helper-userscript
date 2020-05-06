@@ -19,6 +19,18 @@ function jsCache(filePath) {
 	return filePath + '?v=' + cacheValue;
 }
 
+// Element 생성
+function createElement(elementName, htmlCode) {
+	const newElement = document.createElement(elementName);
+	newElement.innerHTML = htmlCode;
+	return newElement;
+}
+
+// 콘솔에 오류 띄우기
+function consoleError(error, info) {
+	console.error(`[KLAS Helper Error]\n${info.title}: ${info.content}\nMessage: ${error.message}`);
+}
+
 (function () {
 	'use strict';
 
