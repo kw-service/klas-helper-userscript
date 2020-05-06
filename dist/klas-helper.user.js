@@ -40,7 +40,7 @@ function consoleError(error, info) {
 	// 메인 파일 삽입
 	// 업데이트 시 즉각적으로 업데이트를 반영하기 위해 이러한 방식을 사용함
 	const scriptElement = document.createElement('script');
-	scriptElement.src = jsCache('https://nbsp1221.github.io/klas-helper/scripts/main.js');
+	scriptElement.src = jsCache('https://nbsp1221.github.io/klas-helper/dist/main.js');
 	document.head.appendChild(scriptElement);
 
 	// window.onload 설정
