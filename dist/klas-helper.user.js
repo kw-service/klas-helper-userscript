@@ -22,13 +22,25 @@ function jsCache(filePath) {
 	return filePath + '?v=' + cacheValue;
 }
 
+// Element 생성
+function createElement(elementName, htmlCode) {
+	const newElement = document.createElement(elementName);
+	newElement.innerHTML = htmlCode;
+	return newElement;
+}
+
+// 콘솔에 오류 띄우기
+function consoleError(error, info) {
+	console.error(`[KLAS Helper Error]\n${info.title}: ${info.content}\nMessage: ${error.message}`);
+}
+
 (function () {
 	'use strict';
 
 	// 메인 파일 삽입
 	// 업데이트 시 즉각적으로 업데이트를 반영하기 위해 이러한 방식을 사용함
 	const scriptElement = document.createElement('script');
-	scriptElement.setAttribute('src', jsCache('https://nbsp1221.github.io/klas-helper/dist/main.js'));
+	scriptElement.src = jsCache('https://nbsp1221.github.io/klas-helper/scripts/main.js');
 	document.head.appendChild(scriptElement);
 
 	// window.onload 설정
