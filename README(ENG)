@@ -21,21 +21,22 @@ If you refuse this, you can only use basic features and be limitted to use autho
 ## Functions
 
 ### Basic Functions
-- Improve uncomfortable aspects of viewing lecture planner (inserting a code, openning a new window, etc)
-- Auto-Calculate Major grade point average and Grade Point Average excluding Major semester by semester
-- Viewing previous semester score
+*Improve uncomfortable aspects of viewing lecture planner (inserting a code, openning a new window, etc)
+*Auto-Calculate Major grade point average and Grade Point Average excluding Major semester by semester
+*Viewing previous semester score
 
 ### Authority required Functions
 *Downloading Online lecture video
 
 ## Installation
-1. Install Tampermonkey extension on chrome web store.
-2.  https://openuserjs.org/scripts/nbsp1221/KLAS_Helper Go to the linked site and download the install button.
+1. Install Tampermonkey extension on Chrome web store(https://chrome.google.com/webstore/search/tampermonkey).
+2. Go to the linked site and click the install button(https://openuserjs.org/scripts/nbsp1221/KLAS_Helper).
 3. Continue to download the installation on Tampermonkey which will be opend in a new tab.
 4. After the installation, it is going to be applied automatically, So you can use it right after access KLAS site.
 
 ## Update
 You don't need to update it manually cause it will be done automatically
+
 1. Click the TamperMonkey Icon which is on upper right side on the web browser.
 2. Update it by pressing User script update button 
 
