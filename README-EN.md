@@ -1,5 +1,7 @@
 # KLAS Helper
 
+[Korean](https://github.com/nbsp1221/klas-helper) | [English](https://github.com/nbsp1221/klas-helper/blob/master/README-EN.md)
+
 This program is for expanding some convenient features when you are using  KwangWoon University KLAS Site.
 You can only use this program on the Web browser that supports Tampermonkey Extension which is the base of 
 this program.

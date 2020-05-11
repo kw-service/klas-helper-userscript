@@ -1,5 +1,7 @@
 # KLAS Helper
 
+[Korean](https://github.com/nbsp1221/klas-helper) | [English](https://github.com/nbsp1221/klas-helper/blob/master/README-EN.md)
+
 광운대학교 KLAS 사이트에 편리한 기능을 추가합니다. Tampermonkey 확장 프로그램으로 동작하기 때문에 이를 지원할 수 있는 웹 브라우저에서만 사용이 가능합니다.
 
 > 아래 작성된 내용은 모두 Chrome 브라우저를 기준으로 한 설명입니다.
