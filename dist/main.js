@@ -552,11 +552,13 @@ const externalPathFunctions = {
 		});
 		*/
 
-		// 2분 쿨타임 제거
+		///////////////////////////////////////////////////////////////////
+		// 이 아래 부분은 온라인 강의 다운로드 버튼을 생성하는 부분이며 업데이트 문제로 놔뒀다가 나중에 없앨 예정
+		///////////////////////////////////////////////////////////////////
 		$('#appModule > table:not(#prjctList) > tbody').append(`
 			<tr>
 				<td>
-					<div style="margin-bottom: 5px">※ 갑작스럽게 사용자 수가 급증하는 관계로 서버에 부담을 주지 않기 위해 아래 버튼을 눌러야만 다운로드 버튼이 생기도록 수정합니다. 양해 부탁드립니다. 조만간 해결하겠습니다.</div>
+					<div style="margin-bottom: 5px">※ 앞으로 인강 다운로드 기능은 동영상을 시청하는 페이지에서만 다운로드가 가능하도록 바뀔 예정입니다. <a href="https://github.com/nbsp1221/klas-helper#%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8" target="_blank" style="color: blue;">여기</a>를 참고하여 스크립트를 업데이트해주세요.</div>
 					<button type="button" class="btn2 btn-learn btn-lecture-down">인강 다운로드 버튼 생성</button>
 				</td>
 			</tr>
@@ -624,5 +626,11 @@ const externalPathFunctions = {
 		// 표 디자인 수정
 		document.querySelector('#prjctList > colgroup > col:nth-of-type(6)').setAttribute('width', '5%');
 		document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
+	},
+	// 온라인 강의 화면
+	'/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do': () => {
+		// 온라인 강의 고유 번호 파싱
+		const videoURL = chkOpen.toString().split('https://kwcommons.kw.ac.kr/em/')[1].split('"')[0];
+		document.body.setAttribute('data-video-code', videoURL);
 	}
 };
