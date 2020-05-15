@@ -433,6 +433,30 @@ const externalPathFunctions = {
 					appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 				}.bind(this));
 		};
+
+		// 강의 숨기기 버튼 생성
+		$("p:contains('온라인 강의리스트')").append(`
+			<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
+		`);
+
+		// 강의 숨기기 버튼에 이벤트 설정
+		$('.btn-clean').click(() => {
+			if (appModule.origin == undefined) {
+				appModule.origin = appModule.cntntList;
+				let copy = [];
+				appModule.cntntList.forEach(item => {
+					if (item.prog != '100') copy.push(item)
+				})
+				appModule.cntntList = copy;
+			}
+			else {
+				appModule.cntntList = appModule.origin;
+				appModule.origin = undefined;
+			}
+
+			$('.btn-clean').toggleClass('btn-green');
+			$('.btn-clean').toggleClass('btn-gray');
+		});
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
