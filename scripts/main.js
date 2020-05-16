@@ -457,6 +457,12 @@ const externalPathFunctions = {
 			$('.btn-clean').toggleClass('btn-green');
 			$('.btn-clean').toggleClass('btn-gray');
 		});
+
+		// 과목 변경시 강의 숨기기 초기화
+		$("select[name='selectSubj']").change(() => {
+			appModule.origin = undefined;
+			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+		});
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
