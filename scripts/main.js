@@ -509,6 +509,40 @@ const externalPathFunctions = {
 			</tr>
 		`);
 
+		// 강의 숨기기 버튼 생성
+		$('#appModule > table:not(#prjctList) > tbody').append(`
+			<tr>
+				<td>
+					<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
+				</td>
+			</tr>
+		`);
+
+		// 강의 숨기기 버튼에 이벤트 설정
+		$('.btn-clean').click(() => {
+			if (appModule.origin == undefined) {
+				appModule.origin = appModule.list;
+				let copy = [];
+				appModule.list.forEach(item => {
+					if (item.prog != '100') copy.push(item)
+				})
+				appModule.list = copy;
+			}
+			else {
+				appModule.list = appModule.origin;
+				appModule.origin = undefined;
+			}
+
+			$('.btn-clean').toggleClass('btn-green');
+			$('.btn-clean').toggleClass('btn-gray');
+		});
+
+		// 과목 변경시 강의 숨기기 초기화
+		$("select[name='selectSubj']").change(() => {
+			appModule.origin = undefined;
+			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+		});
+
 		// 인증 팝업 무시
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			console.log(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun);
