@@ -457,6 +457,12 @@ const externalPathFunctions = {
 			$('.btn-clean').toggleClass('btn-green');
 			$('.btn-clean').toggleClass('btn-gray');
 		});
+
+		// 과목 변경시 강의 숨기기 초기화
+		$("select[name='selectSubj']").change(() => {
+			appModule.origin = undefined;
+			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+		});
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
@@ -502,6 +508,68 @@ const externalPathFunctions = {
 				</td>
 			</tr>
 		`);
+
+		// 강의 숨기기 버튼 생성
+		$('#appModule > table:not(#prjctList) > tbody').append(`
+			<tr>
+				<td>
+					<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
+				</td>
+			</tr>
+		`);
+
+		// 강의 숨기기 버튼에 이벤트 설정
+		$('.btn-clean').click(() => {
+			if (appModule.origin == undefined) {
+				appModule.origin = appModule.list;
+				let copy = [];
+				appModule.list.forEach(item => {
+					if (item.prog != '100') copy.push(item)
+				})
+				appModule.list = copy;
+			}
+			else {
+				appModule.list = appModule.origin;
+				appModule.origin = undefined;
+			}
+
+			$('.btn-clean').toggleClass('btn-green');
+			$('.btn-clean').toggleClass('btn-gray');
+		});
+
+		// 과목 변경시 강의 숨기기 초기화
+		$("select[name='selectSubj']").change(() => {
+			appModule.origin = undefined;
+			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+		});
+
+		// 강의 숨기기 기능에 맞도록 표 레이아웃 구현 방식 수정
+		appModule.setRowspan = function () {
+			for (let i = 1; i <= 16; i++) {
+				const weekRows = $('.weekNo-' + i);
+				const moduleTitleRows = $('.moduletitle-' + i);
+				const totalTimeRows = $('.totalTime-' + i);
+				
+				weekRows.removeAttr('rowspan').show();
+				moduleTitleRows.removeAttr('rowspan').show();
+				totalTimeRows.removeAttr('rowspan').show();
+
+				if (weekRows.length > 1) {
+					weekRows.eq(0).attr('rowspan', weekRows.length);
+					weekRows.not(':eq(0)').hide();
+				}
+
+				if (moduleTitleRows.length > 1) {
+					moduleTitleRows.eq(0).attr('rowspan', moduleTitleRows.length);
+					moduleTitleRows.not(':eq(0)').hide();
+				}
+
+				if (totalTimeRows.length > 1) {
+					totalTimeRows.eq(0).attr('rowspan', totalTimeRows.length);
+					totalTimeRows.not(':eq(0)').hide();
+				}
+			}
+		};
 
 		// 인증 팝업 무시
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
