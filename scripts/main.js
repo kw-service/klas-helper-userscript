@@ -550,9 +550,9 @@ const externalPathFunctions = {
 				const moduleTitleRows = $('.moduletitle-' + i);
 				const totalTimeRows = $('.totalTime-' + i);
 				
-				weekRows.show();
-				moduleTitleRows.show();
-				totalTimeRows.show();
+				weekRows.removeAttr('rowspan').show();
+				moduleTitleRows.removeAttr('rowspan').show();
+				totalTimeRows.removeAttr('rowspan').show();
 
 				if (weekRows.length > 1) {
 					weekRows.eq(0).attr('rowspan', weekRows.length);
