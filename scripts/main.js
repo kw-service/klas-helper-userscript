@@ -543,6 +543,34 @@ const externalPathFunctions = {
 			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
 		});
 
+		// 강의 숨기기 기능에 맞도록 표 레이아웃 구현 방식 수정
+		appModule.setRowspan = function () {
+			for (let i = 1; i <= 16; i++) {
+				const weekRows = $('.weekNo-' + i);
+				const moduleTitleRows = $('.moduletitle-' + i);
+				const totalTimeRows = $('.totalTime-' + i);
+				
+				weekRows.show();
+				moduleTitleRows.show();
+				totalTimeRows.show();
+
+				if (weekRows.length > 1) {
+					weekRows.eq(0).attr('rowspan', weekRows.length);
+					weekRows.not(':eq(0)').hide();
+				}
+
+				if (moduleTitleRows.length > 1) {
+					moduleTitleRows.eq(0).attr('rowspan', moduleTitleRows.length);
+					moduleTitleRows.not(':eq(0)').hide();
+				}
+
+				if (totalTimeRows.length > 1) {
+					totalTimeRows.eq(0).attr('rowspan', totalTimeRows.length);
+					totalTimeRows.not(':eq(0)').hide();
+				}
+			}
+		};
+
 		// 인증 팝업 무시
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			console.log(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun);
