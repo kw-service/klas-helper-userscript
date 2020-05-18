@@ -39,14 +39,6 @@ function consoleError(error, info) {
 (function () {
 	'use strict';
 
-	// 기본 함수 삽입
-	document.head.appendChild(createElement('script',
-		createElement.toString() +
-		openLinkNewWindow.toString() +
-		floorFixed.toString() +
-		consoleError.toString()
-	));
-
 	const externalLibs = [
 		'https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js'
 	];
@@ -60,10 +52,10 @@ function consoleError(error, info) {
 
 	// window.onload 설정
 	window.addEventListener('load', () => {
-		// externalPathFunctions 함수 삽입
+		// externalPathFunctions 함수 실행
 		for (const path in externalPathFunctions) {
 			if (path === location.pathname) {
-				document.head.appendChild(createElement('script', `(${externalPathFunctions[path].toString()})();`));
+				externalPathFunctions[path]();
 			}
 		}
 	});
