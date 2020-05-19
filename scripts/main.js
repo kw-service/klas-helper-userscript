@@ -58,6 +58,13 @@ function consoleError(error, info) {
 				externalPathFunctions[path]();
 			}
 		}
+
+		// KLAS Helper 사용 여부 문구 추가
+		document.querySelector('.navtxt').prepend(createElement('span', `
+			<span style="margin-right: 20px">
+				<a href="https://github.com/nbsp1221/klas-helper" target="_blank">KLAS Helper</a> 사용 중
+			</span>
+		`));
 	});
 })();
 
