@@ -465,83 +465,6 @@ const externalPathFunctions = {
 	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
-		// 2분 쿨타임 제거 버튼 생성
-		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr><td>
-				<div style="margin-bottom: 5px">※ 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 컨텐츠 학습을 하지 않도록 주의해 주세요.</div>
-				<button type="button" class="btn2 btn-learn btn-cooldown">2분 쿨타임 제거</button>
-			</td></tr>
-		`);
-
-		// 2분 쿨타임 제거 버튼에 이벤트 설정
-		$('.btn-cooldown').click(() => {
-			appModule.getLrnSttus = function (param) {
-				let self = this;
-				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
-					self.lrnSttus = response.data;
-
-					if (response.data === 'Y' || response.data === 'N') {
-						if (ios) {
-							$('#viewForm').prop('target', '_blank').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit();
-						}
-						else {
-							let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
-							$('#viewForm').prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
-							popup.focus();
-						}
-					}
-					else if (response.request.responseURL.includes('LoginForm.do')){
-						linkUrl(response.request.responseURL);
-					}
-				}.bind(this));
-			};
-
-			alert('2분 쿨타임이 제거되었습니다.');
-		});
-
-		// 저작권 안내 문구 렌더링
-		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr>
-				<td>
-					<div style="color: red; margin-top: 10px">※ 온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
-				</td>
-			</tr>
-		`);
-
-		// 강의 숨기기 버튼 생성
-		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr>
-				<td>
-					<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
-				</td>
-			</tr>
-		`);
-
-		// 강의 숨기기 버튼에 이벤트 설정
-		$('.btn-clean').click(() => {
-			if (appModule.origin == undefined) {
-				appModule.origin = appModule.list;
-				let copy = [];
-				appModule.list.forEach(item => {
-					if (item.prog != '100') copy.push(item)
-				})
-				appModule.list = copy;
-			}
-			else {
-				appModule.list = appModule.origin;
-				appModule.origin = undefined;
-			}
-
-			$('.btn-clean').toggleClass('btn-green');
-			$('.btn-clean').toggleClass('btn-gray');
-		});
-
-		// 과목 변경시 강의 숨기기 초기화
-		$("select[name='selectSubj']").change(() => {
-			appModule.origin = undefined;
-			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
-		});
-
 		// 강의 숨기기 기능에 맞도록 표 레이아웃 구현 방식 수정
 		appModule.setRowspan = function () {
 			for (let i = 1; i <= 16; i++) {
@@ -570,6 +493,68 @@ const externalPathFunctions = {
 			}
 		};
 
+		// 안내 문구 및 새로운 기능 렌더링
+		document.querySelector('#appModule > table:not(#prjctList)').after(createElement('div', `
+			<div id="new-features" style="border: 1px solid #D3D0D0; border-radius: 5px; margin-top: 30px; padding: 10px">
+				<div>온라인 강의 다운로드는 '보기' 버튼을 누르면 나오는 강의 화면 페이지에서 이용하실 수 있습니다.</div>
+				<div style="color: red">온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
+				<div style="font-weight: bold; margin-top: 10px">추가된 기능</div>
+				<div>- 2분 쿨타임 제거: 2분 쿨타임을 제거할 수 있습니다. 단, 동시에 여러 콘텐츠 학습을 하지 않도록 주의해 주세요.</div>
+				<div>- 강의 숨기기: 진도율 100%인 강의를 숨길 수 있습니다.</div>
+				<div style="margin-top: 20px">
+					<button type="button" id="btn-cooltime" class="btn2 btn-learn">2분 쿨타임 제거</button>
+					<button type="button" id="btn-hide-lecture" class="btn2 btn-gray">강의 숨기기 On / Off</button>
+				</div>
+			</div>
+		`));
+
+		// 2분 쿨타임 제거 버튼에 이벤트 설정
+		$('#btn-cooltime').click(() => {
+			appModule.getLrnSttus = function (param) {
+				let self = this;
+				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
+					self.lrnSttus = response.data;
+
+					if (response.data === 'Y' || response.data === 'N') {
+						if (ios) {
+							$('#viewForm').prop('target', '_blank').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit();
+						}
+						else {
+							let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+							$('#viewForm').prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+							popup.focus();
+						}
+					}
+					else if (response.request.responseURL.includes('LoginForm.do')){
+						linkUrl(response.request.responseURL);
+					}
+				}.bind(this));
+			};
+
+			alert('2분 쿨타임이 제거되었습니다.');
+		});
+
+		// 강의 숨기기 버튼에 이벤트 설정
+		$('#btn-hide-lecture').click(() => {
+			if (appModule.listBackup) {
+				appModule.list = appModule.listBackup;
+				appModule.listBackup = undefined;
+			}
+			else {
+				appModule.listBackup = appModule.list;
+				appModule.list = appModule.list.filter(v => { if (v.prog !== 100) return v; });
+			}
+
+			$('#btn-hide-lecture').toggleClass('btn-gray');
+			$('#btn-hide-lecture').toggleClass('btn-green');
+		});
+
+		// 과목 변경 시 적용된 기능 초기화
+		$('select[name="selectSubj"]').change(() => {
+			appModule.listBackup = undefined;
+			$('#new-features .btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+		});
+
 		// 인증 팝업 무시
 		lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
 			console.log(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun);
@@ -583,140 +568,6 @@ const externalPathFunctions = {
 					appModule.goViewCntnts(grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog);
 				}.bind(this));
 		};
-
-		// 온라인 강의 고유 번호 파싱
-		/*
-		appModule.$watch('list', function (watchValue) {
-			const videoCodes = [];
-			let videoCount = 0;
-
-			for (let i = 0; i < watchValue.length; i++) {
-				videoCount += watchValue[i].hasOwnProperty('starting');
-			}
-
-			for (let i = 0; i < watchValue.length; i++) {
-				const videoInfo = watchValue[i];
-				let	videoCode = '';
-
-				if (!videoInfo.hasOwnProperty('starting')) {
-					continue;
-				}
-
-				// 예외인 고유 번호는 직접 파싱해서 처리
-				if (videoInfo.starting === null || videoInfo.starting === 'default.htm') {
-					const postData = [];
-					for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
-
-					axios.post('/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do', postData.join('&')).then(function (response) {
-						if (response.data.indexOf('kwcommons.kw.ac.kr/em/') === -1) {
-							videoCode = undefined;
-						}
-						else {
-							videoCode = response.data.split('kwcommons.kw.ac.kr/em/')[1].split('"')[0];
-						}
-					});
-				}
-				else {
-					videoCode = videoInfo.starting.split('/');
-					videoCode = videoCode[videoCode.length - 1];
-				}
-
-				const syncTimer = setInterval(() => {
-					if (videoCode === undefined) {
-						videoCount--;
-						clearInterval(syncTimer);
-					}
-					else if (videoCode !== '') {
-						videoCodes.push({ index: i, videoCode });
-						clearInterval(syncTimer);
-					}
-				}, 100);
-			}
-
-			// table 태그에 고유 번호 저장
-			const syncTimer = setInterval(() => {
-				if (videoCount === videoCodes.length) {
-					document.querySelector('#prjctList').setAttribute('data-video-codes', JSON.stringify(videoCodes));
-					clearInterval(syncTimer);
-				}
-			}, 100);
-		});
-		*/
-
-		///////////////////////////////////////////////////////////////////
-		// 이 아래 부분은 온라인 강의 다운로드 버튼을 생성하는 부분이며 업데이트 문제로 놔뒀다가 나중에 없앨 예정
-		///////////////////////////////////////////////////////////////////
-		$('#appModule > table:not(#prjctList) > tbody').append(`
-			<tr>
-				<td>
-					<div style="margin-bottom: 5px">※ 앞으로 인강 다운로드 기능은 동영상을 시청하는 페이지에서만 다운로드가 가능하도록 바뀔 예정입니다. <a href="https://github.com/nbsp1221/klas-helper#%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8" target="_blank" style="color: blue;">여기</a>를 참고하여 스크립트를 업데이트해주세요.</div>
-					<button type="button" class="btn2 btn-learn btn-lecture-down">인강 다운로드 버튼 생성</button>
-				</td>
-			</tr>
-		`);
-
-		$('.btn-lecture-down').click(() => {
-			$('.btn-lecture-down').hide();
-
-			const videoCodes = [];
-			let videoCount = 0;
-			const watchValue = appModule.$data.list;
-
-			for (let i = 0; i < watchValue.length; i++) {
-				videoCount += watchValue[i].hasOwnProperty('starting');
-			}
-
-			for (let i = 0; i < watchValue.length; i++) {
-				const videoInfo = watchValue[i];
-				let	videoCode = '';
-
-				if (!videoInfo.hasOwnProperty('starting')) {
-					continue;
-				}
-
-				// 예외인 고유 번호는 직접 파싱해서 처리
-				if (videoInfo.starting === null || videoInfo.starting === 'default.htm') {
-					const postData = [];
-					for (const key in videoInfo) postData.push(`${key}=${videoInfo[key]}`);
-
-					axios.post('/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do', postData.join('&')).then(function (response) {
-						if (response.data.indexOf('kwcommons.kw.ac.kr/em/') === -1) {
-							videoCode = undefined;
-						}
-						else {
-							videoCode = response.data.split('kwcommons.kw.ac.kr/em/')[1].split('"')[0];
-						}
-					});
-				}
-				else {
-					videoCode = videoInfo.starting.split('/');
-					videoCode = videoCode[videoCode.length - 1];
-				}
-
-				const syncTimer = setInterval(() => {
-					if (videoCode === undefined) {
-						videoCount--;
-						clearInterval(syncTimer);
-					}
-					else if (videoCode !== '') {
-						videoCodes.push({ index: i, videoCode });
-						clearInterval(syncTimer);
-					}
-				}, 100);
-			}
-
-			// table 태그에 고유 번호 저장
-			const syncTimer = setInterval(() => {
-				if (videoCount === videoCodes.length) {
-					document.querySelector('#prjctList').setAttribute('data-video-codes', JSON.stringify(videoCodes));
-					clearInterval(syncTimer);
-				}
-			}, 100);
-		});
-
-		// 표 디자인 수정
-		document.querySelector('#prjctList > colgroup > col:nth-of-type(6)').setAttribute('width', '5%');
-		document.querySelector('#prjctList > colgroup > col:nth-of-type(7)').setAttribute('width', '15%');
 	},
 	// 온라인 강의 화면
 	'/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do': () => {
