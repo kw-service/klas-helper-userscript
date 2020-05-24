@@ -71,6 +71,109 @@ function consoleError(error, info) {
 // 태그에 삽입되는 함수 목록
 // 다른 확장 프로그램을 지원하기 위해 태그 삽입이 필요
 const externalPathFunctions = {
+	// 메인 페이지
+	'/std/cmn/frame/Frame.do': () => {
+		// 온라인 강의 현황
+		const showLectureLimit = async () => {
+			const promises = [];
+			const limitLectures = {};
+
+			// 현재 수강 중인 과목 얻기
+			for (const classInfo of appModule.atnlcSbjectList) {
+				limitLectures[classInfo.subj] = {
+					subjectName: classInfo.subjNm,
+					leftDay: Infinity,
+					lectureCount: 0
+				};
+
+				promises.push(axios.post('/std/lis/evltn/SelectOnlineCntntsStdList.do', {
+					selectSubj: classInfo.subj,
+					selectYearhakgi: classInfo.yearhakgi,
+					selectChangeYn: 'Y'
+				}));
+			}
+
+			// 온라인 강의 콘텐츠 얻기
+			await axios.all(promises).then((results) => {
+				const nowDate = new Date();
+
+				for (const response of results) {
+					for (const lectureInfo of response.data) {
+						if (lectureInfo.evltnSe !== 'lesson' || lectureInfo.prog === 100) {
+							continue;
+						}
+
+						// 마감까지 남은 일 수 구하기
+						const endDate = new Date(lectureInfo.endDate + ':59');
+						const dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+
+						if (dateDayGap < 0) {
+							continue;
+						}
+
+						// 마감이 제일 빠른 강의로 갱신
+						if (limitLectures[lectureInfo.subj].leftDay > dateDayGap) {
+							limitLectures[lectureInfo.subj].leftDay = dateDayGap;
+							limitLectures[lectureInfo.subj].lectureCount = 1;
+						}
+						else if (limitLectures[lectureInfo.subj].leftDay == dateDayGap) {
+							limitLectures[lectureInfo.subj].lectureCount++;
+						}
+					}
+				}
+			});
+			
+			// 마감이 빠른 순으로 정렬
+			const sortedLimitLectures = Object.values(limitLectures).sort((left, right) => {
+				return left.leftDay === right.leftDay ? right.lectureCount - left.lectureCount : left.leftDay - right.leftDay;
+			});
+
+			// HTML 코드 생성
+			const htmlCode = sortedLimitLectures.reduce((acc, cur) => {
+				let contentCode = '';
+
+				if (cur.leftDay === 0) {
+					contentCode = `<div style="color: red; font-weight: bold">오늘 마감인 강의가 ${cur.lectureCount}개 있습니다. 😭</div>`;
+				}
+				else if (cur.leftDay === 1) {
+					contentCode = `<div style="color: red">내일 마감인 강의가 ${cur.lectureCount}개 있습니다. 😥</div>`;
+				}
+				else if (cur.leftDay === Infinity) {
+					contentCode = `<div>남아있는 강의가 없습니다! 😄</div>`;
+				}
+				else {
+					contentCode = `<div>${cur.leftDay}일 후 마감인 강의가 ${cur.lectureCount}개 있습니다.</div>`;
+				}
+
+				acc += `
+					<div style="margin-top: 5px; overflow: hidden">
+						<div style="font-weight: bold; float: left; margin-right: 20px; width: 200px">${cur.subjectName}</div>
+						${contentCode}
+					</div>
+				`;
+
+				return acc;
+			}, '');
+
+			// 렌더링
+			document.querySelector('.subjectbox').prepend(createElement('div', `
+				<div class="card card-body mb-4">
+					<div class="bodtitle" style="margin-bottom: 5px">
+						<p class="title-text">온라인 강의 현황</p>
+					</div>
+					${htmlCode}
+				</div>
+			`));
+		};
+		
+		// 모든 정보를 불러올 때까지 대기
+		const waitTimer = setInterval(() => {
+			if (appModule && appModule.atnlcSbjectList.length > 0) {
+				clearInterval(waitTimer);
+				showLectureLimit();
+			}
+		}, 100);
+	},
 	// 강의 계획서 조회 - 학부
 	'/std/cps/atnlc/LectrePlanStdPage.do': () => {
 		let waitSearch = false;
