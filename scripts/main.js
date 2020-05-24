@@ -73,17 +73,23 @@ function consoleError(error, info) {
 const externalPathFunctions = {
 	// 메인 페이지
 	'/std/cmn/frame/Frame.do': () => {
-		// 온라인 강의 현황
-		const showLectureLimit = async () => {
+		// 수강 과목 현황
+		const showLimit = async () => {
 			const promises = [];
-			const limitLectures = {};
+			const limitInfo = {};
 
 			// 현재 수강 중인 과목 얻기
 			for (const classInfo of appModule.atnlcSbjectList) {
-				limitLectures[classInfo.subj] = {
+				limitInfo[classInfo.subj] = {
 					subjectName: classInfo.subjNm,
-					leftDay: Infinity,
-					lectureCount: 0
+					lecture: {
+						leftDay: Infinity,
+						count: 0
+					},
+					homework: {
+						leftDay: Infinity,
+						count: 0
+					}
 				};
 
 				promises.push(axios.post('/std/lis/evltn/SelectOnlineCntntsStdList.do', {
@@ -93,17 +99,14 @@ const externalPathFunctions = {
 				}));
 			}
 
-			// 온라인 강의 콘텐츠 얻기
+			// 해당 과목의 온라인 강의, 과제 등 정보 얻기
 			await axios.all(promises).then((results) => {
 				const nowDate = new Date();
 
 				for (const response of results) {
-					for (const lectureInfo of response.data) {
-						if (lectureInfo.evltnSe !== 'lesson' || lectureInfo.prog === 100) {
-							continue;
-						}
+					const subjectCode = JSON.parse(response.config.data).selectSubj;
 
-						// 마감까지 남은 일 수 구하기
+					for (const lectureInfo of response.data) {
 						const endDate = new Date(lectureInfo.endDate + ':59');
 						const dateDayGap = Math.floor((endDate - nowDate) / 86400000);
 
@@ -111,45 +114,98 @@ const externalPathFunctions = {
 							continue;
 						}
 
-						// 마감이 제일 빠른 강의로 갱신
-						if (limitLectures[lectureInfo.subj].leftDay > dateDayGap) {
-							limitLectures[lectureInfo.subj].leftDay = dateDayGap;
-							limitLectures[lectureInfo.subj].lectureCount = 1;
-						}
-						else if (limitLectures[lectureInfo.subj].leftDay == dateDayGap) {
-							limitLectures[lectureInfo.subj].lectureCount++;
+						switch (lectureInfo.evltnSe) {
+							// 온라인 강의
+							case 'lesson':
+								if (lectureInfo.prog === 100) {
+									continue;
+								}
+
+								if (limitInfo[subjectCode].lecture.leftDay > dateDayGap) {
+									limitInfo[subjectCode].lecture.leftDay = dateDayGap;
+									limitInfo[subjectCode].lecture.count = 1;
+								}
+								else if (limitInfo[subjectCode].lecture.leftDay === dateDayGap) {
+									limitInfo[subjectCode].lecture.count++;
+								}
+
+								break;
+
+							// 과제
+							case 'proj':
+								if (lectureInfo.registDt) {
+									continue;
+								}
+
+								if (limitInfo[subjectCode].homework.leftDay > dateDayGap) {
+									limitInfo[subjectCode].homework.leftDay = dateDayGap;
+									limitInfo[subjectCode].homework.count = 1;
+								}
+								else if (limitInfo[subjectCode].homework.leftDay === dateDayGap) {
+									limitInfo[subjectCode].homework.count++;
+								}
+
+								break;
+
+							default:
+								continue;
 						}
 					}
 				}
 			});
 			
 			// 마감이 빠른 순으로 정렬
-			const sortedLimitLectures = Object.values(limitLectures).sort((left, right) => {
-				return left.leftDay === right.leftDay ? right.lectureCount - left.lectureCount : left.leftDay - right.leftDay;
+			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
+				if (left.homework.leftDay === right.homework.leftDay) {
+					if (left.lecture.leftDay === right.lecture.leftDay) {
+						return right.lecture.count - left.lecture.count;
+					}
+					else {
+						return left.lecture.leftDay - right.lecture.leftDay;
+					}
+				}
+				else {
+					return left.homework.leftDay - right.homework.leftDay;
+				}
 			});
 
 			// HTML 코드 생성
-			const htmlCode = sortedLimitLectures.reduce((acc, cur) => {
-				let contentCode = '';
+			const trCode = sortedLimitInfo.reduce((acc, cur) => {
+				let lectureCode = '';
+				let homeworkCode = '';
 
-				if (cur.leftDay === 0) {
-					contentCode = `<div style="color: red; font-weight: bold">오늘 마감인 강의가 ${cur.lectureCount}개 있습니다. 😭</div>`;
+				if (cur.lecture.leftDay === 0) {
+					lectureCode = `<td style="color: red; font-weight: bold">오늘 마감인 강의가 ${cur.lecture.count}개 있습니다. 😭</td>`;
 				}
-				else if (cur.leftDay === 1) {
-					contentCode = `<div style="color: red">내일 마감인 강의가 ${cur.lectureCount}개 있습니다. 😥</div>`;
+				else if (cur.lecture.leftDay === 1) {
+					lectureCode = `<td style="color: red"><strong>내일 마감</strong>인 강의가 <strong>${cur.lecture.count}개</strong> 있습니다. 😥</td>`;
 				}
-				else if (cur.leftDay === Infinity) {
-					contentCode = `<div>남아있는 강의가 없습니다! 😄</div>`;
+				else if (cur.lecture.leftDay === Infinity) {
+					lectureCode = `<td style="color: green">남아있는 강의가 없습니다! 😄</td>`;
 				}
 				else {
-					contentCode = `<div>${cur.leftDay}일 후 마감인 강의가 ${cur.lectureCount}개 있습니다.</div>`;
+					lectureCode = `<td><strong>${cur.lecture.leftDay}일 후</strong> 마감인 강의가 <strong>${cur.lecture.count}개</strong> 있습니다.</td>`;
+				}
+
+				if (cur.homework.leftDay === 0) {
+					homeworkCode = `<td style="color: red; font-weight: bold">오늘 마감인 과제가 ${cur.homework.count}개 있습니다. 😭</td>`;
+				}
+				else if (cur.homework.leftDay === 1) {
+					homeworkCode = `<td style="color: red"><strong>내일 마감</strong>인 과제가 <strong>${cur.homework.count}개</strong> 있습니다. 😥</td>`;
+				}
+				else if (cur.homework.leftDay === Infinity) {
+					homeworkCode = `<td style="color: green">남아있는 과제가 없습니다! 😄</td>`;
+				}
+				else {
+					homeworkCode = `<td><strong>${cur.homework.leftDay}일 후</strong> 마감인 과제가 <strong>${cur.homework.count}개</strong> 있습니다.</td>`;
 				}
 
 				acc += `
-					<div style="margin-top: 5px; overflow: hidden">
-						<div style="font-weight: bold; float: left; margin-right: 20px; width: 200px">${cur.subjectName}</div>
-						${contentCode}
-					</div>
+					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
+						<td style="font-weight: bold">${cur.subjectName}</td>
+						${lectureCode}
+						${homeworkCode}
+					</tr>
 				`;
 
 				return acc;
@@ -158,10 +214,26 @@ const externalPathFunctions = {
 			// 렌더링
 			document.querySelector('.subjectbox').prepend(createElement('div', `
 				<div class="card card-body mb-4">
-					<div class="bodtitle" style="margin-bottom: 5px">
-						<p class="title-text">온라인 강의 현황</p>
+					<div class="bodtitle">
+						<p class="title-text">수강 과목 현황</p>
 					</div>
-					${htmlCode}
+					<table>
+						<colgroup>
+							<col width="30%">
+							<col width="35%">
+							<col width="35%">
+						</colgroup>
+						<thead>
+							<tr style="border-bottom: 1px solid #DCE3EB; font-weight: bold; height: 30px">
+								<td></td>
+								<td>온라인 강의</td>
+								<td>과제</td>
+							</tr>
+						</thead>
+						<tbody>
+							${trCode}
+						</tbody>
+					</table>
 				</div>
 			`));
 		};
@@ -170,7 +242,7 @@ const externalPathFunctions = {
 		const waitTimer = setInterval(() => {
 			if (appModule && appModule.atnlcSbjectList.length > 0) {
 				clearInterval(waitTimer);
-				showLectureLimit();
+				showLimit();
 			}
 		}, 100);
 	},
