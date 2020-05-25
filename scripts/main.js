@@ -79,9 +79,9 @@ const externalPathFunctions = {
 			const limitInfo = {};
 
 			// 현재 수강 중인 과목 얻기
-			for (const classInfo of appModule.atnlcSbjectList) {
-				limitInfo[classInfo.subj] = {
-					subjectName: classInfo.subjNm,
+			for (const subjectInfo of appModule.atnlcSbjectList) {
+				limitInfo[subjectInfo.subj] = {
+					subjectName: subjectInfo.subjNm,
 					lecture: {
 						leftDay: Infinity,
 						count: 0
@@ -92,73 +92,110 @@ const externalPathFunctions = {
 					}
 				};
 
+				// 온라인 강의를 가져올 주소 설정
 				promises.push(axios.post('/std/lis/evltn/SelectOnlineCntntsStdList.do', {
-					selectSubj: classInfo.subj,
-					selectYearhakgi: classInfo.yearhakgi,
+					selectSubj: subjectInfo.subj,
+					selectYearhakgi: subjectInfo.yearhakgi,
+					selectChangeYn: 'Y'
+				}));
+
+				// 과제를 가져올 주소 설정
+				promises.push(axios.post('/std/lis/evltn/TaskStdList.do', {
+					selectSubj: subjectInfo.subj,
+					selectYearhakgi: subjectInfo.yearhakgi,
 					selectChangeYn: 'Y'
 				}));
 			}
 
-			// 해당 과목의 온라인 강의, 과제 등 정보 얻기
-			await axios.all(promises).then((results) => {
+			// 온라인 강의 파싱 함수
+			const getLecture = (subjectCode, data) => {
 				const nowDate = new Date();
 
-				for (const response of results) {
-					const subjectCode = JSON.parse(response.config.data).selectSubj;
+				for (const lectureInfo of data) {
+					if (lectureInfo.evltnSe !== 'lesson' || lectureInfo.prog === 100) {
+						continue;
+					}
 
-					for (const lectureInfo of response.data) {
-						const endDate = new Date(lectureInfo.endDate + ':59');
-						const dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+					const endDate = new Date(lectureInfo.endDate + ':59');
+					const dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+
+					if (dateDayGap < 0) {
+						continue;
+					}
+
+					if (limitInfo[subjectCode].lecture.leftDay > dateDayGap) {
+						limitInfo[subjectCode].lecture.leftDay = dateDayGap;
+						limitInfo[subjectCode].lecture.count = 1;
+					}
+					else if (limitInfo[subjectCode].lecture.leftDay === dateDayGap) {
+						limitInfo[subjectCode].lecture.count++;
+					}
+				}
+			};
+
+			// 과제 파싱 함수
+			const getHomework = (subjectCode, data) => {
+				const nowDate = new Date();
+
+				for (const homeworkInfo of data) {
+					if (homeworkInfo.submityn === 'Y') {
+						continue;
+					}
+
+					const endDate = new Date(homeworkInfo.expiredate + ':59');
+					let dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+
+					if (dateDayGap < 0) {
+						if (!homeworkInfo.reexpiredate) {
+							continue;
+						}
+
+						// 추가 제출 기한
+						const reEndDate = new Date(homeworkInfo.reexpiredate + ':59');
+						dateDayGap = Math.floor((reEndDate - nowDate) / 86400000);
 
 						if (dateDayGap < 0) {
 							continue;
 						}
+					}
 
-						switch (lectureInfo.evltnSe) {
-							// 온라인 강의
-							case 'lesson':
-								if (lectureInfo.prog === 100) {
-									continue;
-								}
+					if (limitInfo[subjectCode].homework.leftDay > dateDayGap) {
+						limitInfo[subjectCode].homework.leftDay = dateDayGap;
+						limitInfo[subjectCode].homework.count = 1;
+					}
+					else if (limitInfo[subjectCode].homework.leftDay === dateDayGap) {
+						limitInfo[subjectCode].homework.count++;
+					}
+				}
+			};
 
-								if (limitInfo[subjectCode].lecture.leftDay > dateDayGap) {
-									limitInfo[subjectCode].lecture.leftDay = dateDayGap;
-									limitInfo[subjectCode].lecture.count = 1;
-								}
-								else if (limitInfo[subjectCode].lecture.leftDay === dateDayGap) {
-									limitInfo[subjectCode].lecture.count++;
-								}
+			// 해당 과목의 온라인 강의와 과제 정보 얻기
+			await axios.all(promises).then((results) => {
+				for (const response of results) {
+					const subjectCode = JSON.parse(response.config.data).selectSubj;
 
-								break;
+					switch (response.config.url) {
+						case '/std/lis/evltn/SelectOnlineCntntsStdList.do':
+							getLecture(subjectCode, response.data);
+							break;
 
-							// 과제
-							case 'proj':
-								if (lectureInfo.registDt) {
-									continue;
-								}
-
-								if (limitInfo[subjectCode].homework.leftDay > dateDayGap) {
-									limitInfo[subjectCode].homework.leftDay = dateDayGap;
-									limitInfo[subjectCode].homework.count = 1;
-								}
-								else if (limitInfo[subjectCode].homework.leftDay === dateDayGap) {
-									limitInfo[subjectCode].homework.count++;
-								}
-
-								break;
-
-							default:
-								continue;
-						}
+						case '/std/lis/evltn/TaskStdList.do':
+							getHomework(subjectCode, response.data);
+							break;
 					}
 				}
 			});
-			
+
 			// 마감이 빠른 순으로 정렬
 			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
 				if (left.homework.leftDay === right.homework.leftDay) {
 					if (left.lecture.leftDay === right.lecture.leftDay) {
-						return right.lecture.count - left.lecture.count;
+						if (left.homework.count === right.homework.count) {
+							return right.lecture.count - left.lecture.count;
+						}
+						else {
+							return right.homework.count - left.homework.count;
+						}
 					}
 					else {
 						return left.lecture.leftDay - right.lecture.leftDay;
