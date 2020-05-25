@@ -83,11 +83,11 @@ const externalPathFunctions = {
 				limitInfo[subjectInfo.subj] = {
 					subjectName: subjectInfo.subjNm,
 					lecture: {
-						leftDay: Infinity,
+						leftTime: Infinity,
 						count: 0
 					},
 					homework: {
-						leftDay: Infinity,
+						leftTime: Infinity,
 						count: 0
 					}
 				};
@@ -117,17 +117,17 @@ const externalPathFunctions = {
 					}
 
 					const endDate = new Date(lectureInfo.endDate + ':59');
-					const dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+					const gapHours = Math.floor((endDate - nowDate) / 3600000);
 
-					if (dateDayGap < 0) {
+					if (gapHours < 0) {
 						continue;
 					}
 
-					if (limitInfo[subjectCode].lecture.leftDay > dateDayGap) {
-						limitInfo[subjectCode].lecture.leftDay = dateDayGap;
+					if (limitInfo[subjectCode].lecture.leftTime > gapHours) {
+						limitInfo[subjectCode].lecture.leftTime = gapHours;
 						limitInfo[subjectCode].lecture.count = 1;
 					}
-					else if (limitInfo[subjectCode].lecture.leftDay === dateDayGap) {
+					else if (limitInfo[subjectCode].lecture.leftTime === gapHours) {
 						limitInfo[subjectCode].lecture.count++;
 					}
 				}
@@ -143,27 +143,27 @@ const externalPathFunctions = {
 					}
 
 					const endDate = new Date(homeworkInfo.expiredate + ':59');
-					let dateDayGap = Math.floor((endDate - nowDate) / 86400000);
+					let gapHours = Math.floor((endDate - nowDate) / 3600000);
 
-					if (dateDayGap < 0) {
+					if (gapHours < 0) {
 						if (!homeworkInfo.reexpiredate) {
 							continue;
 						}
 
 						// 추가 제출 기한
 						const reEndDate = new Date(homeworkInfo.reexpiredate + ':59');
-						dateDayGap = Math.floor((reEndDate - nowDate) / 86400000);
+						gapHours = Math.floor((reEndDate - nowDate) / 3600000);
 
-						if (dateDayGap < 0) {
+						if (gapHours < 0) {
 							continue;
 						}
 					}
 
-					if (limitInfo[subjectCode].homework.leftDay > dateDayGap) {
-						limitInfo[subjectCode].homework.leftDay = dateDayGap;
+					if (limitInfo[subjectCode].homework.leftTime > gapHours) {
+						limitInfo[subjectCode].homework.leftTime = gapHours;
 						limitInfo[subjectCode].homework.count = 1;
 					}
-					else if (limitInfo[subjectCode].homework.leftDay === dateDayGap) {
+					else if (limitInfo[subjectCode].homework.leftTime === gapHours) {
 						limitInfo[subjectCode].homework.count++;
 					}
 				}
@@ -188,8 +188,8 @@ const externalPathFunctions = {
 
 			// 마감이 빠른 순으로 정렬
 			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
-				if (left.homework.leftDay === right.homework.leftDay) {
-					if (left.lecture.leftDay === right.lecture.leftDay) {
+				if (left.homework.leftTime === right.homework.leftTime) {
+					if (left.lecture.leftTime === right.lecture.leftTime) {
 						if (left.homework.count === right.homework.count) {
 							return right.lecture.count - left.lecture.count;
 						}
@@ -198,50 +198,46 @@ const externalPathFunctions = {
 						}
 					}
 					else {
-						return left.lecture.leftDay - right.lecture.leftDay;
+						return left.lecture.leftTime - right.lecture.leftTime;
 					}
 				}
 				else {
-					return left.homework.leftDay - right.homework.leftDay;
+					return left.homework.leftTime - right.homework.leftTime;
 				}
 			});
 
+			// 내용 생성 함수
+			const createContent = (leftTime, itemName, itemCount) => {
+				if (leftTime === Infinity) {
+					return `<td style="color: green">남아있는 ${itemName}가 없습니다! 😄</td>`;
+				}
+
+				const leftDay = Math.floor(leftTime / 24);
+				const leftHours = leftTime % 24;
+
+				if (leftDay === 0) {
+					if (leftHours === 0) {
+						return `<td style="color: red; font-weight: bold">마감까지 1시간도 남지 않은 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
+					}
+					else {
+						return `<td style="color: red; font-weight: bolder"><strong>${leftHours}시간 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😭</td>`;
+					}
+				}
+				else if (leftDay === 1) {
+					return `<td style="color: red"><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
+				}
+				else {
+					return `<td><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다.</td>`;
+				}
+			};
+
 			// HTML 코드 생성
 			const trCode = sortedLimitInfo.reduce((acc, cur) => {
-				let lectureCode = '';
-				let homeworkCode = '';
-
-				if (cur.lecture.leftDay === 0) {
-					lectureCode = `<td style="color: red; font-weight: bold">오늘 마감인 강의가 ${cur.lecture.count}개 있습니다. 😭</td>`;
-				}
-				else if (cur.lecture.leftDay === 1) {
-					lectureCode = `<td style="color: red"><strong>내일 마감</strong>인 강의가 <strong>${cur.lecture.count}개</strong> 있습니다. 😥</td>`;
-				}
-				else if (cur.lecture.leftDay === Infinity) {
-					lectureCode = `<td style="color: green">남아있는 강의가 없습니다! 😄</td>`;
-				}
-				else {
-					lectureCode = `<td><strong>${cur.lecture.leftDay}일 후</strong> 마감인 강의가 <strong>${cur.lecture.count}개</strong> 있습니다.</td>`;
-				}
-
-				if (cur.homework.leftDay === 0) {
-					homeworkCode = `<td style="color: red; font-weight: bold">오늘 마감인 과제가 ${cur.homework.count}개 있습니다. 😭</td>`;
-				}
-				else if (cur.homework.leftDay === 1) {
-					homeworkCode = `<td style="color: red"><strong>내일 마감</strong>인 과제가 <strong>${cur.homework.count}개</strong> 있습니다. 😥</td>`;
-				}
-				else if (cur.homework.leftDay === Infinity) {
-					homeworkCode = `<td style="color: green">남아있는 과제가 없습니다! 😄</td>`;
-				}
-				else {
-					homeworkCode = `<td><strong>${cur.homework.leftDay}일 후</strong> 마감인 과제가 <strong>${cur.homework.count}개</strong> 있습니다.</td>`;
-				}
-
 				acc += `
 					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
 						<td style="font-weight: bold">${cur.subjectName}</td>
-						${lectureCode}
-						${homeworkCode}
+						${createContent(cur.lecture.leftTime, '강의', cur.lecture.count)}
+						${createContent(cur.homework.leftTime, '과제', cur.homework.count)}
 					</tr>
 				`;
 
