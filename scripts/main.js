@@ -271,7 +271,7 @@ const externalPathFunctions = {
 				</div>
 			`));
 		};
-		
+
 		// 모든 정보를 불러올 때까지 대기
 		const waitTimer = setInterval(() => {
 			if (appModule && appModule.atnlcSbjectList.length > 0) {
@@ -642,11 +642,12 @@ const externalPathFunctions = {
 				}.bind(this));
 		};
 
-		// 2분 쿨타임 제거,강의 숨기기 버튼 생성
+		// 2분 쿨타임 제거, 강의 숨기기 버튼 생성
 		$("p:contains('온라인 강의리스트')").append(`
 			<button type="button" class="btn2 btn-learn btn-cooltime">2분 쿨타임 제거</button>
-			<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
+			<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On / Off</button>
 		`);
+
 		// 2분 쿨타임 제거 버튼에 이벤트 설정
 		$('.btn-cooltime').click(() => {
 			appModule.getLrnSttus = function (param) {
@@ -672,6 +673,7 @@ const externalPathFunctions = {
 
 			alert('2분 쿨타임이 제거되었습니다.');
 		});
+
 		// 강의 숨기기 버튼에 이벤트 설정
 		$('.btn-clean').click(() => {
 			if (appModule.origin == undefined) {
