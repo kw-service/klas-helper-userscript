@@ -646,11 +646,36 @@ const externalPathFunctions = {
 				}.bind(this));
 		};
 
-		// 강의 숨기기 버튼 생성
+		// 2분 쿨타임 제거,강의 숨기기 버튼 생성
 		$("p:contains('온라인 강의리스트')").append(`
+			<button type="button" class="btn2 btn-learn btn-cooltime">2분 쿨타임 제거</button>
 			<button type="button" class="btn2 btn-gray btn-clean">강의 숨기기 On/Off</button>
 		`);
+		// 2분 쿨타임 제거 버튼에 이벤트 설정
+		$('.btn-cooltime').click(() => {
+			appModule.getLrnSttus = function (param) {
+				let self = this;
+				axios.post('/std/lis/evltn/SelectLrnSttusStd.do', self.$data).then(function (response) {
+					self.lrnSttus = response.data;
 
+					if (response.data === 'Y' || response.data === 'N') {
+						if (ios) {
+							$('#viewForm').prop('target', '_blank').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit();
+						}
+						else {
+							let popup = window.open('', 'previewPopup', 'resizable=yes, scrollbars=yes, top=100px, left=100px, height=' + self.height + 'px, width= ' + self.width + 'px');
+							$('#viewForm').prop('target', 'previewPopup').prop('action', '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do').submit().prop('target', '');
+							popup.focus();
+						}
+					}
+					else if (response.request.responseURL.includes('LoginForm.do')){
+						linkUrl(response.request.responseURL);
+					}
+				}.bind(this));
+			};
+
+			alert('2분 쿨타임이 제거되었습니다.');
+		});
 		// 강의 숨기기 버튼에 이벤트 설정
 		$('.btn-clean').click(() => {
 			if (appModule.origin == undefined) {
