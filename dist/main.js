@@ -250,7 +250,6 @@ const externalPathFunctions = {
 					<div class="bodtitle">
 						<p class="title-text">수강 과목 현황</p>
 					</div>
-					<div style="color: red; margin-bottom: 10px">현재 남아있는 과제가 있음에도 불구하고 없다고 표시되는 문제가 발생하고 있습니다. 번거롭겠지만 과제는 한 번씩 꼭 확인해 주시면 감사하겠습니다!</div>
 					<table>
 						<colgroup>
 							<col width="30%">
