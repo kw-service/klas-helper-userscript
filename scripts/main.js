@@ -188,21 +188,14 @@ const externalPathFunctions = {
 
 			// 마감이 빠른 순으로 정렬
 			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
-				if (left.homework.leftTime === right.homework.leftTime) {
-					if (left.lecture.leftTime === right.lecture.leftTime) {
-						if (left.homework.count === right.homework.count) {
-							return right.lecture.count - left.lecture.count;
-						}
-						else {
-							return right.homework.count - left.homework.count;
-						}
-					}
-					else {
-						return left.lecture.leftTime - right.lecture.leftTime;
-					}
+				const minLeft = Math.min(left.lecture.leftTime, left.homework.leftTime);
+				const minRight = Math.min(right.lecture.leftTime, right.homework.leftTime);
+
+				if (minLeft === minRight) {
+					return (right.lecture.count + right.homework.count) - (left.lecture.count + right.homework.count);
 				}
 				else {
-					return left.homework.leftTime - right.homework.leftTime;
+					return minLeft - minRight;
 				}
 			});
 
