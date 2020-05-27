@@ -66,6 +66,9 @@ function consoleError(error, info) {
 			</span>
 		`));
 	});
+
+	// 로그인 세션 유지
+	setInterval(() => fetch('/'), 600000);
 })();
 
 // 태그에 삽입되는 함수 목록
@@ -699,7 +702,7 @@ const externalPathFunctions = {
 				const weekRows = $('.weekNo-' + i);
 				const moduleTitleRows = $('.moduletitle-' + i);
 				const totalTimeRows = $('.totalTime-' + i);
-				
+
 				weekRows.removeAttr('rowspan').show();
 				moduleTitleRows.removeAttr('rowspan').show();
 				totalTimeRows.removeAttr('rowspan').show();
