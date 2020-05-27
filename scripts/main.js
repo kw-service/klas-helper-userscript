@@ -86,11 +86,11 @@ const externalPathFunctions = {
 				limitInfo[subjectInfo.subj] = {
 					subjectName: subjectInfo.subjNm,
 					lecture: {
-						leftTime: Infinity,
+						time: Infinity,
 						count: 0
 					},
 					homework: {
-						leftTime: Infinity,
+						time: Infinity,
 						count: 0
 					}
 				};
@@ -126,11 +126,11 @@ const externalPathFunctions = {
 						continue;
 					}
 
-					if (limitInfo[subjectCode].lecture.leftTime > gapHours) {
-						limitInfo[subjectCode].lecture.leftTime = gapHours;
+					if (limitInfo[subjectCode].lecture.time > gapHours) {
+						limitInfo[subjectCode].lecture.time = gapHours;
 						limitInfo[subjectCode].lecture.count = 1;
 					}
-					else if (limitInfo[subjectCode].lecture.leftTime === gapHours) {
+					else if (limitInfo[subjectCode].lecture.time === gapHours) {
 						limitInfo[subjectCode].lecture.count++;
 					}
 				}
@@ -162,11 +162,11 @@ const externalPathFunctions = {
 						}
 					}
 
-					if (limitInfo[subjectCode].homework.leftTime > gapHours) {
-						limitInfo[subjectCode].homework.leftTime = gapHours;
+					if (limitInfo[subjectCode].homework.time > gapHours) {
+						limitInfo[subjectCode].homework.time = gapHours;
 						limitInfo[subjectCode].homework.count = 1;
 					}
-					else if (limitInfo[subjectCode].homework.leftTime === gapHours) {
+					else if (limitInfo[subjectCode].homework.time === gapHours) {
 						limitInfo[subjectCode].homework.count++;
 					}
 				}
@@ -191,15 +191,18 @@ const externalPathFunctions = {
 
 			// 마감이 빠른 순으로 정렬
 			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
-				const minLeft = Math.min(left.lecture.leftTime, left.homework.leftTime);
-				const minRight = Math.min(right.lecture.leftTime, right.homework.leftTime);
+				const minLeft = left.homework.time < left.lecture.time ? left.homework : left.lecture;
+				const minRight = right.homework.time < right.lecture.time ? right.homework : right.lecture;
 
-				if (minLeft === minRight) {
-					return (right.lecture.count + right.homework.count) - (left.lecture.count + left.homework.count);
+				if (minLeft.time !== minRight.time) {
+					return minLeft.time - minRight.time;
 				}
-				else {
-					return minLeft - minRight;
+
+				if (minLeft.count !== minRight.count) {
+					return minRight.count - minLeft.count;
 				}
+
+				return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
 			});
 
 			// 내용 생성 함수
@@ -232,8 +235,8 @@ const externalPathFunctions = {
 				acc += `
 					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
 						<td style="font-weight: bold">${cur.subjectName}</td>
-						${createContent(cur.lecture.leftTime, '강의', cur.lecture.count)}
-						${createContent(cur.homework.leftTime, '과제', cur.homework.count)}
+						${createContent(cur.lecture.time, '강의', cur.lecture.count)}
+						${createContent(cur.homework.time, '과제', cur.homework.count)}
 					</tr>
 				`;
 
