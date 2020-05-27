@@ -210,14 +210,14 @@ const externalPathFunctions = {
 
 				if (leftDay === 0) {
 					if (leftHours === 0) {
-						return `<td style="color: red; font-weight: bold">마감까지 1시간도 남지 않은 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
+						return `<td style="color: red; font-weight: bold">곧 마감인 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
 					}
 					else {
 						return `<td style="color: red; font-weight: bolder"><strong>${leftHours}시간 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😭</td>`;
 					}
 				}
 				else if (leftDay === 1) {
-					return `<td style="color: red"><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
+					return `<td style="color: red"><strong>1일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
 				}
 				else {
 					return `<td><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다.</td>`;
