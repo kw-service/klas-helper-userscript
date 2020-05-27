@@ -195,7 +195,7 @@ const externalPathFunctions = {
 				const minRight = Math.min(right.lecture.leftTime, right.homework.leftTime);
 
 				if (minLeft === minRight) {
-					return (right.lecture.count + right.homework.count) - (left.lecture.count + right.homework.count);
+					return (right.lecture.count + right.homework.count) - (left.lecture.count + left.homework.count);
 				}
 				else {
 					return minLeft - minRight;
