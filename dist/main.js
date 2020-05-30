@@ -66,6 +66,9 @@ function consoleError(error, info) {
 			</span>
 		`));
 	});
+
+	// 로그인 세션 유지
+	setInterval(() => fetch('/'), 600000);
 })();
 
 // 태그에 삽입되는 함수 목록
@@ -83,11 +86,11 @@ const externalPathFunctions = {
 				limitInfo[subjectInfo.subj] = {
 					subjectName: subjectInfo.subjNm,
 					lecture: {
-						leftTime: Infinity,
+						time: Infinity,
 						count: 0
 					},
 					homework: {
-						leftTime: Infinity,
+						time: Infinity,
 						count: 0
 					}
 				};
@@ -123,11 +126,11 @@ const externalPathFunctions = {
 						continue;
 					}
 
-					if (limitInfo[subjectCode].lecture.leftTime > gapHours) {
-						limitInfo[subjectCode].lecture.leftTime = gapHours;
+					if (limitInfo[subjectCode].lecture.time > gapHours) {
+						limitInfo[subjectCode].lecture.time = gapHours;
 						limitInfo[subjectCode].lecture.count = 1;
 					}
-					else if (limitInfo[subjectCode].lecture.leftTime === gapHours) {
+					else if (limitInfo[subjectCode].lecture.time === gapHours) {
 						limitInfo[subjectCode].lecture.count++;
 					}
 				}
@@ -159,11 +162,11 @@ const externalPathFunctions = {
 						}
 					}
 
-					if (limitInfo[subjectCode].homework.leftTime > gapHours) {
-						limitInfo[subjectCode].homework.leftTime = gapHours;
+					if (limitInfo[subjectCode].homework.time > gapHours) {
+						limitInfo[subjectCode].homework.time = gapHours;
 						limitInfo[subjectCode].homework.count = 1;
 					}
-					else if (limitInfo[subjectCode].homework.leftTime === gapHours) {
+					else if (limitInfo[subjectCode].homework.time === gapHours) {
 						limitInfo[subjectCode].homework.count++;
 					}
 				}
@@ -188,15 +191,18 @@ const externalPathFunctions = {
 
 			// 마감이 빠른 순으로 정렬
 			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
-				const minLeft = Math.min(left.lecture.leftTime, left.homework.leftTime);
-				const minRight = Math.min(right.lecture.leftTime, right.homework.leftTime);
+				const minLeft = left.homework.time < left.lecture.time ? left.homework : left.lecture;
+				const minRight = right.homework.time < right.lecture.time ? right.homework : right.lecture;
 
-				if (minLeft === minRight) {
-					return (right.lecture.count + right.homework.count) - (left.lecture.count + right.homework.count);
+				if (minLeft.time !== minRight.time) {
+					return minLeft.time - minRight.time;
 				}
-				else {
-					return minLeft - minRight;
+
+				if (minLeft.count !== minRight.count) {
+					return minRight.count - minLeft.count;
 				}
+
+				return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
 			});
 
 			// 내용 생성 함수
@@ -210,14 +216,14 @@ const externalPathFunctions = {
 
 				if (leftDay === 0) {
 					if (leftHours === 0) {
-						return `<td style="color: red; font-weight: bold">마감까지 1시간도 남지 않은 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
+						return `<td style="color: red; font-weight: bold">곧 마감인 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
 					}
 					else {
 						return `<td style="color: red; font-weight: bolder"><strong>${leftHours}시간 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😭</td>`;
 					}
 				}
 				else if (leftDay === 1) {
-					return `<td style="color: red"><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
+					return `<td style="color: red"><strong>1일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
 				}
 				else {
 					return `<td><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다.</td>`;
@@ -229,8 +235,8 @@ const externalPathFunctions = {
 				acc += `
 					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
 						<td style="font-weight: bold">${cur.subjectName}</td>
-						${createContent(cur.lecture.leftTime, '강의', cur.lecture.count)}
-						${createContent(cur.homework.leftTime, '과제', cur.homework.count)}
+						${createContent(cur.lecture.time, '강의', cur.lecture.count)}
+						${createContent(cur.homework.time, '과제', cur.homework.count)}
 					</tr>
 				`;
 
@@ -699,7 +705,7 @@ const externalPathFunctions = {
 				const weekRows = $('.weekNo-' + i);
 				const moduleTitleRows = $('.moduletitle-' + i);
 				const totalTimeRows = $('.totalTime-' + i);
-				
+
 				weekRows.removeAttr('rowspan').show();
 				moduleTitleRows.removeAttr('rowspan').show();
 				totalTimeRows.removeAttr('rowspan').show();
