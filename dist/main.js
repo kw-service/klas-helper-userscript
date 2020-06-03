@@ -145,7 +145,7 @@ const externalPathFunctions = {
 						continue;
 					}
 
-					const endDate = new Date(homeworkInfo.expiredate + ':59');
+					const endDate = new Date(homeworkInfo.expiredate);
 					let gapHours = Math.floor((endDate - nowDate) / 3600000);
 
 					if (gapHours < 0) {
@@ -154,7 +154,7 @@ const externalPathFunctions = {
 						}
 
 						// 추가 제출 기한
-						const reEndDate = new Date(homeworkInfo.reexpiredate + ':59');
+						const reEndDate = new Date(homeworkInfo.reexpiredate);
 						gapHours = Math.floor((reEndDate - nowDate) / 3600000);
 
 						if (gapHours < 0) {
@@ -249,7 +249,7 @@ const externalPathFunctions = {
 					<div class="bodtitle">
 						<p class="title-text">수강 과목 현황</p>
 					</div>
-					<table>
+					<table style="width: 100%">
 						<colgroup>
 							<col width="30%">
 							<col width="35%">
