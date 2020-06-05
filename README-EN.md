@@ -27,7 +27,10 @@ If you refuse this, you can only use basic features and be limitted to use autho
 
 * Improve uncomfortable aspects of viewing lecture planner (inserting a code, openning a new window, etc)
 * Auto-Calculate Major grade point average and Grade Point Average excluding Major semester by semester
-* Viewing previous semester score
+* Viewing previous semester scores
+* Remove 2 minutes cool-down time watching videos in a row
+* Be able to hide videos on the list which already has taken
+* Show lectures and assignments on main page that haven't been taken or submitted yet
 
 ### Authority required Functions
 
