@@ -54,24 +54,40 @@ const internalPathFunctions = {
 				url: 'https://kwcommons.kw.ac.kr/viewer/ssplayer/uniplayer_support/content.php?content_id=' + videoCode,
 				onload: function (response) {
 					const documentXML = response.responseXML;
-					const videoURLs = [];
+					const videoList = [];
 
 					// 분할된 동영상 등 다양한 상황 처리
 					if (documentXML.getElementsByTagName('desktop').length > 0) {
-						videoURLs.push(documentXML.getElementsByTagName('media_uri')[0].innerHTML)
+						videoList.push({
+							url: documentXML.getElementsByTagName('media_uri')[0].innerHTML,
+							type: documentXML.getElementsByTagName('content_type')[0].innerHTML
+						});
 					}
 					else {
 						const mediaURI = documentXML.getElementsByTagName('media_uri')[0].innerHTML;
+						const videoNames = documentXML.getElementsByTagName('main_media');
+						const videoTypes = documentXML.getElementsByTagName('story_type');
 
-						for (const videoName of documentXML.getElementsByTagName('main_media')) {
-							videoURLs.push(mediaURI.replace('[MEDIA_FILE]', videoName.innerHTML));
+						for (let i = 0; i < videoNames.length; i++) {
+							videoList.push({
+								url: mediaURI.replace('[MEDIA_FILE]', videoNames[i].innerHTML),
+								type: videoTypes[i].innerHTML
+							});
 						}
 					}
 
 					// 다운로드 버튼 렌더링
-					for (let i = 0; i < videoURLs.length; i++) {
+					for (let i = 0; i < videoList.length; i++) {
+						const videoURL = videoList[i].url;
+						const videoType = videoList[i].type === 'video1' ? '동영상' : '오디오';
+
 						const labelElement = document.createElement('label');
-						labelElement.innerHTML = `<a href="${videoURLs[i]}" target="_blank" style="background-color: brown; color: white; font-weight: bold; padding: 10px; text-decoration: none">동영상 받기 #${i + 1}</a>`;
+						labelElement.innerHTML = `
+							<a href="${videoURL}" target="_blank" style="background-color: brown; padding: 10px; text-decoration: none">
+								<span style="color: white; font-weight: bold">${videoType} 받기 #${i + 1}</span>
+							</a>
+						`;
+
 						document.querySelector('.mvtopba > label:last-of-type').after(labelElement);
 					}
 				}
