@@ -65,6 +65,13 @@ function consoleError(error, info) {
 				<a href="https://github.com/nbsp1221/klas-helper" target="_blank">KLAS Helper</a> 사용 중
 			</span>
 		`));
+
+		// To top button 위치 고정
+		$('.btnup').css({
+			position: 'fixed',
+			right: '30px',
+			bottom: '30px'
+		});
 	});
 
 	// 로그인 세션 유지
