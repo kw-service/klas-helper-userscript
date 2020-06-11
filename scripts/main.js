@@ -235,7 +235,7 @@ const externalPathFunctions = {
 
 				if (leftDay === 0) {
 					if (leftHours === 0) {
-						return `<span style="color: red; font-weight: bold">${itemTotalCount}개의 ${itemName} 중 ${itemCount}가 곧 마감입니다. 😱</span>`;
+						return `<span style="color: red; font-weight: bold">${itemTotalCount}개의 ${itemName} 중 ${itemCount}개가 곧 마감입니다. 😱</span>`;
 					}
 					else {
 						return `<span style="color: red; font-weight: bolder">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftHours}시간 후</strong> 마감입니다. 😭</span>`;
