@@ -84,195 +84,8 @@ const externalPathFunctions = {
 	// 메인 페이지
 	'/std/cmn/frame/Frame.do': () => {
 		// 수강 과목 현황
-		const showLimit = async () => {
-			const promises = [];
-			const limitInfo = {};
-
-			// 현재 수강 중인 과목 얻기
-			for (const subjectInfo of appModule.atnlcSbjectList) {
-				limitInfo[subjectInfo.subj] = {
-					subjectName: subjectInfo.subjNm,
-					subjectCode: subjectInfo.subj,
-					yearSemester: subjectInfo.yearhakgi,
-					lecture: {
-						time: Infinity,
-						count: 0,
-						totalCount: 0
-					},
-					homework: {
-						time: Infinity,
-						count: 0,
-						totalCount: 0
-					}
-				};
-
-				// 온라인 강의를 가져올 주소 설정
-				promises.push(axios.post('/std/lis/evltn/SelectOnlineCntntsStdList.do', {
-					selectSubj: subjectInfo.subj,
-					selectYearhakgi: subjectInfo.yearhakgi,
-					selectChangeYn: 'Y'
-				}));
-
-				// 과제를 가져올 주소 설정
-				promises.push(axios.post('/std/lis/evltn/TaskStdList.do', {
-					selectSubj: subjectInfo.subj,
-					selectYearhakgi: subjectInfo.yearhakgi,
-					selectChangeYn: 'Y'
-				}));
-			}
-
-			// 온라인 강의 파싱 함수
-			const getLecture = (subjectCode, data) => {
-				const nowDate = new Date();
-
-				for (const lectureInfo of data) {
-					if (lectureInfo.evltnSe !== 'lesson' || lectureInfo.prog === 100) {
-						continue;
-					}
-
-					const endDate = new Date(lectureInfo.endDate + ':59');
-					const gapHours = Math.floor((endDate - nowDate) / 3600000);
-
-					if (gapHours < 0) {
-						continue;
-					}
-
-					if (limitInfo[subjectCode].lecture.time > gapHours) {
-						limitInfo[subjectCode].lecture.time = gapHours;
-						limitInfo[subjectCode].lecture.count = 1;
-					}
-					else if (limitInfo[subjectCode].lecture.time === gapHours) {
-						limitInfo[subjectCode].lecture.count++;
-					}
-
-					limitInfo[subjectCode].lecture.totalCount++;
-				}
-			};
-
-			// 과제 파싱 함수
-			const getHomework = (subjectCode, data) => {
-				const nowDate = new Date();
-
-				for (const homeworkInfo of data) {
-					if (homeworkInfo.submityn === 'Y') {
-						continue;
-					}
-
-					const endDate = new Date(homeworkInfo.expiredate);
-					let gapHours = Math.floor((endDate - nowDate) / 3600000);
-
-					if (gapHours < 0) {
-						if (!homeworkInfo.reexpiredate) {
-							continue;
-						}
-
-						// 추가 제출 기한
-						const reEndDate = new Date(homeworkInfo.reexpiredate);
-						gapHours = Math.floor((reEndDate - nowDate) / 3600000);
-
-						if (gapHours < 0) {
-							continue;
-						}
-					}
-
-					if (limitInfo[subjectCode].homework.time > gapHours) {
-						limitInfo[subjectCode].homework.time = gapHours;
-						limitInfo[subjectCode].homework.count = 1;
-					}
-					else if (limitInfo[subjectCode].homework.time === gapHours) {
-						limitInfo[subjectCode].homework.count++;
-					}
-
-					limitInfo[subjectCode].homework.totalCount++;
-				}
-			};
-
-			// 해당 과목의 온라인 강의와 과제 정보 얻기
-			await axios.all(promises).then((results) => {
-				for (const response of results) {
-					const subjectCode = JSON.parse(response.config.data).selectSubj;
-
-					switch (response.config.url) {
-						case '/std/lis/evltn/SelectOnlineCntntsStdList.do':
-							getLecture(subjectCode, response.data);
-							break;
-
-						case '/std/lis/evltn/TaskStdList.do':
-							getHomework(subjectCode, response.data);
-							break;
-					}
-				}
-			});
-
-			// 마감이 빠른 순으로 정렬
-			const sortedLimitInfo = Object.values(limitInfo).sort((left, right) => {
-				const minLeft = left.homework.time < left.lecture.time ? left.homework : left.lecture;
-				const minRight = right.homework.time < right.lecture.time ? right.homework : right.lecture;
-
-				if (minLeft.time !== minRight.time) {
-					return minLeft.time - minRight.time;
-				}
-
-				if (minLeft.count !== minRight.count) {
-					return minRight.count - minLeft.count;
-				}
-
-				return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
-			});
-
-			// 내용 생성 함수
-			const createContent = (itemName, info) => {
-				const leftTime = info.time;
-				const itemCount = info.count;
-				const itemTotalCount = info.totalCount;
-
-				if (leftTime === Infinity) {
-					return `<span style="color: green">남아있는 ${itemName}가 없습니다! 😄</span>`;
-				}
-
-				const leftDay = Math.floor(leftTime / 24);
-				const leftHours = leftTime % 24;
-
-				if (leftDay === 0) {
-					if (leftHours === 0) {
-						return `<span style="color: red; font-weight: bold">${itemTotalCount}개의 ${itemName} 중 ${itemCount}개가 곧 마감입니다. 😱</span>`;
-					}
-					else {
-						return `<span style="color: red; font-weight: bolder">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftHours}시간 후</strong> 마감입니다. 😭</span>`;
-					}
-				}
-				else if (leftDay === 1) {
-					return `<span style="color: red">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>1일 후</strong> 마감입니다. 😥</span>`;
-				}
-				else {
-					return `<span>${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftDay}일 후</strong> 마감입니다.</span>`;
-				}
-			};
-
-			// HTML 코드 생성
-			const trCode = sortedLimitInfo.reduce((acc, cur) => {
-				acc += `
-					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
-						<td style="font-weight: bold">
-							<span style="cursor: pointer" onclick="appModule.goLctrum('${cur.yearSemester}', '${cur.subjectCode}')">${cur.subjectName}</span>
-						</td>
-						<td>
-							<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/OnlineCntntsStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
-								${createContent('강의', cur.lecture)}
-							</span>
-						</td>
-						<td>
-							<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/TaskStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
-								${createContent('과제', cur.homework)}
-							<span>
-						</td>
-					</tr>
-				`;
-
-				return acc;
-			}, '');
-
-			// 렌더링
+		const showDeadline = () => {
+			// 뼈대 코드 렌더링
 			document.querySelector('.subjectbox').prepend(createElement('div', `
 				<div class="card card-body mb-4">
 					<div class="bodtitle">
@@ -285,27 +98,225 @@ const externalPathFunctions = {
 							<col width="35%">
 						</colgroup>
 						<thead>
-							<tr style="border-bottom: 1px solid #DCE3EB; font-weight: bold; height: 30px">
+							<tr style="border-bottom: 1px solid #dce3eb; font-weight: bold; height: 30px">
 								<td></td>
 								<td>온라인 강의</td>
 								<td>과제</td>
 							</tr>
 						</thead>
-						<tbody>
-							${trCode}
-						</tbody>
+						<tbody id="deadline-position"></tbody>
 					</table>
 				</div>
 			`));
+
+			// 수강 과목 현황 업데이트
+			const updateDeadline = async (subjectList) => {
+				const promises = [];
+				const deadlineInfo = {};
+
+				// 현재 수강 중인 과목 얻기
+				for (const subjectInfo of subjectList) {
+					deadlineInfo[subjectInfo.subj] = {
+						subjectName: subjectInfo.subjNm,
+						subjectCode: subjectInfo.subj,
+						yearSemester: subjectInfo.yearhakgi,
+						lecture: {
+							time: Infinity,
+							count: 0,
+							totalCount: 0
+						},
+						homework: {
+							time: Infinity,
+							count: 0,
+							totalCount: 0
+						}
+					};
+
+					// 온라인 강의를 가져올 주소 설정
+					promises.push(axios.post('/std/lis/evltn/SelectOnlineCntntsStdList.do', {
+						selectSubj: subjectInfo.subj,
+						selectYearhakgi: subjectInfo.yearhakgi,
+						selectChangeYn: 'Y'
+					}));
+
+					// 과제를 가져올 주소 설정
+					promises.push(axios.post('/std/lis/evltn/TaskStdList.do', {
+						selectSubj: subjectInfo.subj,
+						selectYearhakgi: subjectInfo.yearhakgi,
+						selectChangeYn: 'Y'
+					}));
+				}
+
+				// 온라인 강의 파싱 함수
+				const parseLecture = (subjectCode, responseData) => {
+					const nowDate = new Date();
+
+					for (const lectureInfo of responseData) {
+						if (lectureInfo.evltnSe !== 'lesson' || lectureInfo.prog === 100) {
+							continue;
+						}
+	
+						const endDate = new Date(lectureInfo.endDate + ':59');
+						const gapHours = Math.floor((endDate - nowDate) / 3600000);
+	
+						if (gapHours < 0) {
+							continue;
+						}
+	
+						if (deadlineInfo[subjectCode].lecture.time > gapHours) {
+							deadlineInfo[subjectCode].lecture.time = gapHours;
+							deadlineInfo[subjectCode].lecture.count = 1;
+						}
+						else if (deadlineInfo[subjectCode].lecture.time === gapHours) {
+							deadlineInfo[subjectCode].lecture.count++;
+						}
+	
+						deadlineInfo[subjectCode].lecture.totalCount++;
+					}
+				};
+
+				// 과제 파싱 함수
+				const parseHomework = (subjectCode, responseData) => {
+					const nowDate = new Date();
+
+					for (const homeworkInfo of responseData) {
+						if (homeworkInfo.submityn === 'Y') {
+							continue;
+						}
+
+						const endDate = new Date(homeworkInfo.expiredate);
+						let gapHours = Math.floor((endDate - nowDate) / 3600000);
+
+						if (gapHours < 0) {
+							if (!homeworkInfo.reexpiredate) {
+								continue;
+							}
+
+							// 추가 제출 기한
+							const reEndDate = new Date(homeworkInfo.reexpiredate);
+							gapHours = Math.floor((reEndDate - nowDate) / 3600000);
+
+							if (gapHours < 0) {
+								continue;
+							}
+						}
+
+						if (deadlineInfo[subjectCode].homework.time > gapHours) {
+							deadlineInfo[subjectCode].homework.time = gapHours;
+							deadlineInfo[subjectCode].homework.count = 1;
+						}
+						else if (deadlineInfo[subjectCode].homework.time === gapHours) {
+							deadlineInfo[subjectCode].homework.count++;
+						}
+
+						deadlineInfo[subjectCode].homework.totalCount++;
+					}
+				};
+
+				// 해당 과목의 마감 정보 얻기
+				await axios.all(promises).then((results) => {
+					for (const response of results) {
+						const subjectCode = JSON.parse(response.config.data).selectSubj;
+
+						switch (response.config.url) {
+							case '/std/lis/evltn/SelectOnlineCntntsStdList.do':
+								parseLecture(subjectCode, response.data);
+								break;
+
+							case '/std/lis/evltn/TaskStdList.do':
+								parseHomework(subjectCode, response.data);
+								break;
+						}
+					}
+				});
+
+				// 마감이 빠른 순으로 정렬
+				const sortedDeadlineInfo = Object.values(deadlineInfo).sort((left, right) => {
+					const minLeft = left.homework.time < left.lecture.time ? left.homework : left.lecture;
+					const minRight = right.homework.time < right.lecture.time ? right.homework : right.lecture;
+
+					if (minLeft.time !== minRight.time) {
+						return minLeft.time - minRight.time;
+					}
+
+					if (minLeft.count !== minRight.count) {
+						return minRight.count - minLeft.count;
+					}
+
+					return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
+				});
+
+				// 내용 생성 함수
+				const createContent = (itemName, info) => {
+					const leftTime = info.time;
+					const itemCount = info.count;
+					const itemTotalCount = info.totalCount;
+
+					if (leftTime === Infinity) {
+						return `<span style="color: green">남아있는 ${itemName}가 없습니다! 😄</span>`;
+					}
+
+					const leftDay = Math.floor(leftTime / 24);
+					const leftHours = leftTime % 24;
+
+					if (leftDay === 0) {
+						if (leftHours === 0) {
+							return `<span style="color: red; font-weight: bold">${itemTotalCount}개의 ${itemName} 중 ${itemCount}개가 곧 마감입니다. 😱</span>`;
+						}
+						else {
+							return `<span style="color: red; font-weight: bolder">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftHours}시간 후</strong> 마감입니다. 😭</span>`;
+						}
+					}
+					else if (leftDay === 1) {
+						return `<span style="color: red">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>1일 후</strong> 마감입니다. 😥</span>`;
+					}
+					else {
+						return `<span>${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftDay}일 후</strong> 마감입니다.</span>`;
+					}
+				};
+
+				// HTML 코드 생성
+				const trCode = sortedDeadlineInfo.reduce((acc, cur) => {
+					acc += `
+						<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
+							<td style="font-weight: bold">
+								<span style="cursor: pointer" onclick="appModule.goLctrum('${cur.yearSemester}', '${cur.subjectCode}')">${cur.subjectName}</span>
+							</td>
+							<td>
+								<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/OnlineCntntsStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
+									${createContent('강의', cur.lecture)}
+								</span>
+							</td>
+							<td>
+								<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/TaskStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
+									${createContent('과제', cur.homework)}
+								<span>
+							</td>
+						</tr>
+					`;
+
+					return acc;
+				}, '');
+
+				// 렌더링
+				document.getElementById('deadline-position').innerHTML = trCode;
+			};
+
+			// 강의 변경 시 수강 과목 현황 업데이트
+			appModule.$watch('atnlcSbjectList', (watchValue) => {
+				updateDeadline(watchValue);
+			});
+
+			// 모든 정보를 불러올 때까지 대기
+			const waitTimer = setInterval(() => {
+				if (appModule && appModule.atnlcSbjectList.length > 0) {
+					clearInterval(waitTimer);
+					updateDeadline(appModule.atnlcSbjectList);
+				}
+			}, 100);
 		};
 
-		// 모든 정보를 불러올 때까지 대기
-		const waitTimer = setInterval(() => {
-			if (appModule && appModule.atnlcSbjectList.length > 0) {
-				clearInterval(waitTimer);
-				showLimit();
-			}
-		}, 100);
+		showDeadline();
 	},
 	// 강의 계획서 조회 - 학부
 	'/std/cps/atnlc/LectrePlanStdPage.do': () => {
