@@ -92,13 +92,17 @@ const externalPathFunctions = {
 			for (const subjectInfo of appModule.atnlcSbjectList) {
 				limitInfo[subjectInfo.subj] = {
 					subjectName: subjectInfo.subjNm,
+					subjectCode: subjectInfo.subj,
+					yearSemester: subjectInfo.yearhakgi,
 					lecture: {
 						time: Infinity,
-						count: 0
+						count: 0,
+						totalCount: 0
 					},
 					homework: {
 						time: Infinity,
-						count: 0
+						count: 0,
+						totalCount: 0
 					}
 				};
 
@@ -140,6 +144,8 @@ const externalPathFunctions = {
 					else if (limitInfo[subjectCode].lecture.time === gapHours) {
 						limitInfo[subjectCode].lecture.count++;
 					}
+
+					limitInfo[subjectCode].lecture.totalCount++;
 				}
 			};
 
@@ -176,6 +182,8 @@ const externalPathFunctions = {
 					else if (limitInfo[subjectCode].homework.time === gapHours) {
 						limitInfo[subjectCode].homework.count++;
 					}
+
+					limitInfo[subjectCode].homework.totalCount++;
 				}
 			};
 
@@ -213,9 +221,13 @@ const externalPathFunctions = {
 			});
 
 			// 내용 생성 함수
-			const createContent = (leftTime, itemName, itemCount) => {
+			const createContent = (itemName, info) => {
+				const leftTime = info.time;
+				const itemCount = info.count;
+				const itemTotalCount = info.totalCount;
+
 				if (leftTime === Infinity) {
-					return `<td style="color: green">남아있는 ${itemName}가 없습니다! 😄</td>`;
+					return `<span style="color: green">남아있는 ${itemName}가 없습니다! 😄</span>`;
 				}
 
 				const leftDay = Math.floor(leftTime / 24);
@@ -223,17 +235,17 @@ const externalPathFunctions = {
 
 				if (leftDay === 0) {
 					if (leftHours === 0) {
-						return `<td style="color: red; font-weight: bold">곧 마감인 ${itemName}가 ${itemCount}개 있습니다. 😱</strong></td>`;
+						return `<span style="color: red; font-weight: bold">${itemTotalCount}개의 ${itemName} 중 ${itemCount}개가 곧 마감입니다. 😱</span>`;
 					}
 					else {
-						return `<td style="color: red; font-weight: bolder"><strong>${leftHours}시간 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😭</td>`;
+						return `<span style="color: red; font-weight: bolder">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftHours}시간 후</strong> 마감입니다. 😭</span>`;
 					}
 				}
 				else if (leftDay === 1) {
-					return `<td style="color: red"><strong>1일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다. 😥</td>`;
+					return `<span style="color: red">${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>1일 후</strong> 마감입니다. 😥</span>`;
 				}
 				else {
-					return `<td><strong>${leftDay}일 후</strong> 마감인 ${itemName}가 <strong>${itemCount}개</strong> 있습니다.</td>`;
+					return `<span>${itemTotalCount}개의 ${itemName} 중 <strong>${itemCount}개</strong>가 <strong>${leftDay}일 후</strong> 마감입니다.</span>`;
 				}
 			};
 
@@ -241,9 +253,19 @@ const externalPathFunctions = {
 			const trCode = sortedLimitInfo.reduce((acc, cur) => {
 				acc += `
 					<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
-						<td style="font-weight: bold">${cur.subjectName}</td>
-						${createContent(cur.lecture.time, '강의', cur.lecture.count)}
-						${createContent(cur.homework.time, '과제', cur.homework.count)}
+						<td style="font-weight: bold">
+							<span style="cursor: pointer" onclick="appModule.goLctrum('${cur.yearSemester}', '${cur.subjectCode}')">${cur.subjectName}</span>
+						</td>
+						<td>
+							<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/OnlineCntntsStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
+								${createContent('강의', cur.lecture)}
+							</span>
+						</td>
+						<td>
+							<span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/TaskStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
+								${createContent('과제', cur.homework)}
+							<span>
+						</td>
 					</tr>
 				`;
 
