@@ -278,7 +278,7 @@ const externalPathFunctions = {
 				// HTML 코드 생성
 				const trCode = sortedDeadlineInfo.reduce((acc, cur) => {
 					acc += `
-						<tr style="border-bottom: 1px solid #DCE3EB; height: 30px">
+						<tr style="border-bottom: 1px solid #dce3eb; height: 30px">
 							<td style="font-weight: bold">
 								<span style="cursor: pointer" onclick="appModule.goLctrum('${cur.yearSemester}', '${cur.subjectCode}')">${cur.subjectName}</span>
 							</td>
@@ -550,7 +550,7 @@ const externalPathFunctions = {
 							{
 								label: '전공 평점',
 								data: majorScoreList,
-								borderColor: '#E74C3C',
+								borderColor: '#e74c3c',
 								borderWidth: 1,
 								fill: false,
 								lineTension: 0,
@@ -560,7 +560,7 @@ const externalPathFunctions = {
 							{
 								label: '전공 외 평점',
 								data: notMajorScoreList,
-								borderColor: '#2980B9',
+								borderColor: '#2980b9',
 								borderWidth: 1,
 								fill: false,
 								lineTension: 0,
@@ -570,7 +570,7 @@ const externalPathFunctions = {
 							{
 								label: '평균 평점',
 								data: allScoreList,
-								borderColor: '#BDC3C7',
+								borderColor: '#bdc3c7',
 								borderWidth: 2,
 								fill: false,
 								lineTension: 0,
@@ -737,6 +737,43 @@ const externalPathFunctions = {
 			$('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
 		});
 	},
+	// 수업 평가
+	'/std/cps/inqire/LctreEvlViewStdPage.do': () => {
+		// 일괄 선택 기능
+		$('.tablegw').before(`
+			<div style="border: 1px solid #ddd; margin: 20px 0 35px 0">
+				<div style="background-color: #d3e9f8; border-bottom: 1px solid #ddd; font-weight: bold; padding: 5px; text-align: center">일괄 선택 기능</div>
+				<div style="overflow: hidden; padding: 10px 0; text-align: center">
+					<div style="float: left; width: 25%">
+						<input type="radio" name="auto" id="auto-2">
+						<label for="auto-2" style="margin: 0">그렇지 않다</label>
+					</div>
+					<div style="float: left; width: 25%">
+						<input type="radio" name="auto" id="auto-3">
+						<label for="auto-3" style="margin: 0">보통이다</label>
+					</div>
+					<div style="float: left; width: 25%">
+						<input type="radio" name="auto" id="auto-4">
+						<label for="auto-4" style="margin: 0">그렇다</label>
+					</div>
+					<div style="float: left; width: 25%">
+						<input type="radio" name="auto" id="auto-5">
+						<label for="auto-5" style="margin: 0">정말 그렇다</label>
+					</div>
+				</div>
+			</div>
+		`);
+		
+		// 일괄 선택 기능에 이벤트 설정
+		$('input[name="auto"]').change(function () {
+			let value = parseInt(this.id.split('-')[1]);
+
+			$(`.tablegw input[value="${value}"]`).each(function() {
+				appModule[this.name] = value;
+				appModule.checkValue(this.name);
+			});
+		});
+	},
 	// 온라인 강의 컨텐츠 보기
 	'/std/lis/evltn/OnlineCntntsStdPage.do': () => {
 		// 강의 숨기기 기능에 맞도록 표 레이아웃 구현 방식 수정
@@ -769,7 +806,7 @@ const externalPathFunctions = {
 
 		// 안내 문구 및 새로운 기능 렌더링
 		document.querySelector('#appModule > table:not(#prjctList)').after(createElement('div', `
-			<div id="new-features" style="border: 1px solid #D3D0D0; border-radius: 5px; margin-top: 30px; padding: 10px">
+			<div id="new-features" style="border: 1px solid #d3d0d0; border-radius: 5px; margin-top: 30px; padding: 10px">
 				<div>온라인 강의 다운로드는 '보기' 버튼을 누르면 나오는 강의 화면 페이지에서 이용하실 수 있습니다.</div>
 				<div style="color: red">온라인 강의 시 사용되는 강의 내용을 공유 및 배포하는 것은 저작권을 침해하는 행위이므로 꼭 개인 소장 용도로만 이용해 주시기 바랍니다.</div>
 				<div style="font-weight: bold; margin-top: 10px">추가된 기능</div>
