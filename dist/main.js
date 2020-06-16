@@ -83,6 +83,75 @@ function consoleError(error, info) {
 const externalPathFunctions = {
 	// 메인 페이지
 	'/std/cmn/frame/Frame.do': () => {
+		// 기말 평가 안내문 표시
+		const showEvaluation = async () => {
+			const setData = {
+				nowYear: 2020,
+				nowSemester: 1,
+				startDate: '2020-06-15',
+				endDate: '2020-06-26',
+				noticeURL: 'https://www.kw.ac.kr/ko/life/notice.jsp?BoardMode=view&DUID=33096'
+			};
+
+			if (!setData.startDate || !setData.endDate) {
+				return;
+			}
+
+			const startDate = new Date(setData.startDate + ' 00:00:00');
+			const endDate = new Date(setData.endDate + ' 23:59:59');
+			const nowDate = new Date();
+
+			if (nowDate < startDate || nowDate > endDate) {
+				return;
+			}
+
+			const postData = {
+				thisYear: setData.nowYear,
+				hakgi: setData.nowSemester,
+				termYn: 'Y'
+			};
+
+			await axios.post('/std/cps/inqire/LctreEvlTermCheck.do').then((response) => {
+				postData['judgeChasu'] = response.data.judgeChasu;
+			});
+
+			await axios.post('/std/cps/inqire/LctreEvlGetHakjuk.do').then((response) => {
+				postData['info'] = response.data;
+			});
+
+			let totalCount = 0;
+			let leftCount = 0;
+
+			await axios.post('/std/cps/inqire/LctreEvlsugangList.do', postData).then((response) => {
+				leftCount = response.data.filter((v) => { if (v.judgeOpt === 'N') return v; }).length;
+				totalCount = response.data.length;
+			});
+
+			if (leftCount === 0) {
+				return;
+			}
+
+			// 렌더링
+			$('.subjectbox').prepend(`
+				<div class="card card-body mb-4">
+					<div class="bodtitle">
+						<p class="title-text">수업 평가 안내</p>
+					</div>
+					<div>
+						<div>
+							<div><strong>${setData.startDate}</strong>부터 <strong>${setData.endDate}</strong>까지 기말 수업 평가를 실시합니다.</div>
+							<div style="color: red">수업 평가를 하지 않으면 성적 공개 기간에 해당 과목의 성적을 확인할 수 없으니 잊지 말고 반드시 평가해 주세요.</div>
+							<div><strong>${totalCount}개</strong> 중 <strong>${leftCount}개</strong>의 수업 평가가 남았습니다.</div>
+						</div>
+						<div style="margin-top: 20px">
+							<button type="button" class="btn2 btn-learn" onclick="linkUrl('/std/cps/inqire/LctreEvlStdPage.do')">수업 평가</button>
+							<a href="${setData.noticeURL}" target="_blank"><button type="button" class="btn2 btn-gray">공지사항 확인</button></a>
+						</div>
+					</div>
+				</div>
+			`);
+		};
+
 		// 수강 과목 현황
 		const showDeadline = () => {
 			// 뼈대 코드 렌더링
@@ -316,6 +385,7 @@ const externalPathFunctions = {
 			}, 100);
 		};
 
+		showEvaluation();
 		showDeadline();
 	},
 	// 강의 계획서 조회 - 학부
