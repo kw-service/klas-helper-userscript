@@ -156,7 +156,7 @@ const externalPathFunctions = {
 		const showDeadline = () => {
 			// 뼈대 코드 렌더링
 			document.querySelector('.subjectbox').prepend(createElement('div', `
-				<div class="card card-body mb-4">
+				<div id="deadline" class="card card-body mb-4" style="display: none">
 					<div class="bodtitle">
 						<p class="title-text">수강 과목 현황</p>
 					</div>
@@ -315,6 +315,12 @@ const externalPathFunctions = {
 					return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
 				});
 
+				// 남아있는 항목이 없을 경우 표시하지 않음
+				if (sortedDeadlineInfo.length === sortedDeadlineInfo.filter(v => { if (v.lecture.count === 0 && v.homework.count === 0) return v; }).length) {
+					$('#deadline').css('display', 'none');
+					return;
+				}
+
 				// 내용 생성 함수
 				const createContent = (itemName, info) => {
 					const leftTime = info.time;
@@ -369,6 +375,7 @@ const externalPathFunctions = {
 
 				// 렌더링
 				document.getElementById('deadline-position').innerHTML = trCode;
+				$('#deadline').css('display', 'flex');
 			};
 
 			// 강의 변경 시 수강 과목 현황 업데이트
