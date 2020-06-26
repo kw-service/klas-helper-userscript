@@ -156,11 +156,11 @@ const externalPathFunctions = {
 		const showDeadline = () => {
 			// 뼈대 코드 렌더링
 			document.querySelector('.subjectbox').prepend(createElement('div', `
-				<div id="deadline" class="card card-body mb-4" style="display: none">
+				<div class="card card-body mb-4">
 					<div class="bodtitle">
 						<p class="title-text">수강 과목 현황</p>
 					</div>
-					<table style="width: 100%">
+					<table id="yes-deadline" style="width: 100%">
 						<colgroup>
 							<col width="30%">
 							<col width="35%">
@@ -173,8 +173,11 @@ const externalPathFunctions = {
 								<td>과제</td>
 							</tr>
 						</thead>
-						<tbody id="deadline-position"></tbody>
+						<tbody></tbody>
 					</table>
+					<div id="no-deadline" style="display: none; text-align: center">
+						<span style="color: green; font-weight: bold">남아있는 항목이 없습니다. 깔끔하네요! 😊</span>
+					</div>
 				</div>
 			`));
 
@@ -182,6 +185,7 @@ const externalPathFunctions = {
 			const updateDeadline = async (subjectList) => {
 				const promises = [];
 				const deadlineInfo = {};
+				let isDeadline = false;
 
 				// 현재 수강 중인 과목 얻기
 				for (const subjectInfo of subjectList) {
@@ -241,6 +245,7 @@ const externalPathFunctions = {
 						}
 	
 						deadlineInfo[subjectCode].lecture.totalCount++;
+						isDeadline = true;
 					}
 				};
 
@@ -279,6 +284,7 @@ const externalPathFunctions = {
 						}
 
 						deadlineInfo[subjectCode].homework.totalCount++;
+						isDeadline = true;
 					}
 				};
 
@@ -314,12 +320,6 @@ const externalPathFunctions = {
 
 					return (right.lecture.count + right.homework.count) - (left.lecture.count - left.homework.count);
 				});
-
-				// 남아있는 항목이 없을 경우 표시하지 않음
-				if (sortedDeadlineInfo.length === sortedDeadlineInfo.filter(v => { if (v.lecture.count === 0 && v.homework.count === 0) return v; }).length) {
-					$('#deadline').css('display', 'none');
-					return;
-				}
 
 				// 내용 생성 함수
 				const createContent = (itemName, info) => {
@@ -374,8 +374,15 @@ const externalPathFunctions = {
 				}, '');
 
 				// 렌더링
-				document.getElementById('deadline-position').innerHTML = trCode;
-				$('#deadline').css('display', 'flex');
+				if (isDeadline) {
+					$('#yes-deadline > tbody').html(trCode);
+					$('#yes-deadline').css('display', 'table');
+					$('#no-deadline').css('display', 'none');
+				}
+				else {
+					$('#yes-deadline').css('display', 'none');
+					$('#no-deadline').css('display', 'block');
+				}
 			};
 
 			// 강의 변경 시 수강 과목 현황 업데이트
