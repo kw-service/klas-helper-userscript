@@ -160,7 +160,7 @@ const externalPathFunctions = {
 					<div class="bodtitle">
 						<p class="title-text">수강 과목 현황</p>
 					</div>
-					<table style="width: 100%">
+					<table id="yes-deadline" style="width: 100%">
 						<colgroup>
 							<col width="30%">
 							<col width="35%">
@@ -173,8 +173,11 @@ const externalPathFunctions = {
 								<td>과제</td>
 							</tr>
 						</thead>
-						<tbody id="deadline-position"></tbody>
+						<tbody></tbody>
 					</table>
+					<div id="no-deadline" style="display: none; text-align: center">
+						<span style="color: green; font-weight: bold">남아있는 항목이 없습니다. 깔끔하네요! 😊</span>
+					</div>
 				</div>
 			`));
 
@@ -182,6 +185,7 @@ const externalPathFunctions = {
 			const updateDeadline = async (subjectList) => {
 				const promises = [];
 				const deadlineInfo = {};
+				let isDeadline = false;
 
 				// 현재 수강 중인 과목 얻기
 				for (const subjectInfo of subjectList) {
@@ -241,6 +245,7 @@ const externalPathFunctions = {
 						}
 	
 						deadlineInfo[subjectCode].lecture.totalCount++;
+						isDeadline = true;
 					}
 				};
 
@@ -279,6 +284,7 @@ const externalPathFunctions = {
 						}
 
 						deadlineInfo[subjectCode].homework.totalCount++;
+						isDeadline = true;
 					}
 				};
 
@@ -368,7 +374,15 @@ const externalPathFunctions = {
 				}, '');
 
 				// 렌더링
-				document.getElementById('deadline-position').innerHTML = trCode;
+				if (isDeadline) {
+					$('#yes-deadline > tbody').html(trCode);
+					$('#yes-deadline').css('display', 'table');
+					$('#no-deadline').css('display', 'none');
+				}
+				else {
+					$('#yes-deadline').css('display', 'none');
+					$('#no-deadline').css('display', 'block');
+				}
 			};
 
 			// 강의 변경 시 수강 과목 현황 업데이트
