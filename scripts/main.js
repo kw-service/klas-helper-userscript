@@ -488,6 +488,57 @@ const externalPathFunctions = {
 	},
 	// 수강 및 성적 조회
 	'/std/cps/inqire/AtnlcScreStdPage.do': () => {
+		    //성적 사전 조회 - 학부
+           const count=0;
+                    appModule.$watch('termCheck',function(newVal,oldVal){
+                            if(appModule.termCheck == 'b') // 성적 공개일 이전 여부
+                            {
+                                appModule.$watch('sungjuk',function(newVal,oldVal){
+                                    for(let i=0;i<appModule.sungjuk[0].sungjukList.length;i++)
+                                    {
+                                        if(appModule.sungjuk[0].sungjukList[i].getGrade==='') // 성적이 기입력된 경우
+                                        {
+                                            count++;
+                                        }
+                                    }
+                                    if(count==0){
+                                        $('.btn-update').hide();
+                                    }
+                                });
+                            }
+                    });
+
+           let btn_location = document.querySelectorAll('b')[5];
+
+            $(btn_location).after(`
+<div style="margin-top: 10px" align="left">
+<button type="button" class="btn2 btn-lightbrown btn-update" >성적 미리 확인하기</button>
+<br></br>
+</div>
+`);
+            $('.btn-update').click(() => {
+                appModule.getSungjuk();
+            });
+            appModule.getSungjuk = function() {
+                let self = this;
+                let yes=0;
+                axios.post('/std/cps/inqire/AtnlcScreSungjukInfo.do') //학기별 성적(학부생)
+                    .then(function (response) {
+                    var sungjukInfo=response.data;
+                    for(var i=0;i<sungjukInfo.length;i++){
+                        for(var j=0;j<sungjukInfo[i].sungjukList.length;j++){
+                            if(i==0)
+                            {
+                                if(appModule.sungjuk[0].sungjukList[j].getGrade != sungjukInfo[i].sungjukList[j].getGrade){
+                                    yes++;
+                                }
+                            }
+                        }
+                    }
+                    this.sungjuk = sungjukInfo;
+                    alert("입력된 과목 : " + yes + "개의 성적을 불러옵니다.");
+                }.bind(this));
+            }
 		const scoreTimer = setInterval(() => {
 			if (!appModule) {
 				return;
