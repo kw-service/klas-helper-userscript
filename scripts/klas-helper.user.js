@@ -106,4 +106,4 @@ const internalPathFunctions = {
 			clearInterval(waitTimer);
 		}, 10000);
 	}
-
+};
