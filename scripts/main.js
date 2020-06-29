@@ -488,7 +488,7 @@ const externalPathFunctions = {
 	},
 	// 수강 및 성적 조회
 	'/std/cps/inqire/AtnlcScreStdPage.do': () => {
-		    //성적 사전 조회 - 학부
+		    //성적 사전 조회하기 - 학부
            const count=0;
                     appModule.$watch('termCheck',function(newVal,oldVal){
                             if(appModule.termCheck == 'b') // 성적 공개일 이전 여부
