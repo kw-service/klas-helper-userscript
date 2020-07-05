@@ -1,7 +1,7 @@
 // 소수점 버림 함수
 function floorFixed(number, decimalPlace = 2) {
-	const pow10 = 10 ** decimalPlace;
-	return (Math.floor(number * pow10) / pow10).toFixed(decimalPlace);
+    const pow10 = 10 ** decimalPlace;
+    return (Math.floor(number * pow10) / pow10).toFixed(decimalPlace);
 }
 
 // 메인 실행 함수
@@ -33,15 +33,15 @@ function floorFixed(number, decimalPlace = 2) {
         `);
 
         // To top button 위치 고정
-		$('.btnup').css({
-			position: 'fixed',
-			right: '30px',
-			bottom: '30px'
-		});
+        $('.btnup').css({
+            position: 'fixed',
+            right: '30px',
+            bottom: '30px'
+        });
     });
 
     // 로그인 세션 유지
-	setInterval(() => { fetch('/') }, 600000);
+    setInterval(() => { fetch('/') }, 600000);
 })();
 
 const pathRouter = {
