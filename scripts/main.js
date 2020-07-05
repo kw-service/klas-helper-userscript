@@ -442,6 +442,7 @@ function routeSyllabusGraduatePage() {
 function routeScorePage() {
     const calculateGPA = () => {
         const scoreDatas = appModule.$data.sungjuk;
+        const averageSemesterScore = Array(13).fill(0);
         let trCode = '';
 
         const labelList = [];
@@ -455,7 +456,10 @@ function routeScorePage() {
             const score = scoreDatas[i].sungjukList;
 
             // 계절 학기의 경우 계산에서 제외
-            if (semester > 2) continue;
+            if (semester > 2) {
+                averageSemesterScore[0] += score.reduce((acc, cur) => acc + parseInt(cur.hakjumNum), 0);
+                continue;
+            }
 
             // 표 순서대로 평점 정보 기록
             const gpaInfo = score.reduce((acc, cur) => {
@@ -484,10 +488,14 @@ function routeScorePage() {
                 acc[9] += isIncludeF ? changer[grade] * credit : 0;                 // 전체 총점 (F 포함)
                 acc[10] += isIncludeF ? credit : 0;                                 // 전체 취득 학점 (F 포함)
                 acc[11] += isExcludeF ? changer[grade] * credit : 0;                // 전체 총점 (F 미포함)
-                acc[12] += isExcludeF ? credit : 0;                                 // 전체 취득 학점 (F 미포함)\
+                acc[12] += isExcludeF ? credit : 0;                                 // 전체 취득 학점 (F 미포함)
 
                 return acc;
             }, Array(13).fill(0));
+
+            for (let j = 0; j < gpaInfo.length; j++) {
+                averageSemesterScore[j] += gpaInfo[j];
+            }
 
             if (gpaInfo[0] === 0) {
                 gpaInfo[0] = '-';
@@ -519,6 +527,24 @@ function routeScorePage() {
                 allScoreList.push(gpaInfo[9]);
             }
         }
+
+        // 전체 학기 평점 계산
+        for (let j = 1; j < averageSemesterScore.length; j += 2) {
+            averageSemesterScore[j] = averageSemesterScore[j + 1] > 0 ? floorFixed(averageSemesterScore[j] / averageSemesterScore[j + 1]) : '-';
+        }
+
+        trCode += `
+            <tr style="font-weight: bold">
+                <td>전체 학기</td>
+                <td>${averageSemesterScore[0]}</td>
+                <td>${averageSemesterScore[1]}</td>
+                <td>${averageSemesterScore[3]}</td>
+                <td>${averageSemesterScore[5]}</td>
+                <td>${averageSemesterScore[7]}</td>
+                <td>${averageSemesterScore[9]}</td>
+                <td>${averageSemesterScore[11]}</td>
+            </tr>
+        `;
 
         // 렌더링
         $('#hakbu > table:nth-of-type(4)').before(`
