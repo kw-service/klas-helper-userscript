@@ -469,7 +469,7 @@ function routeScorePage() {
 
                 const code = cur.codeName1.trim();
                 const credit = parseInt(cur.hakjumNum);
-                const grade = cur.getGrade.trim();
+                const grade = cur.getGrade.trim().split(' ')[0];
 
                 const isMajor = code[0] === '전';
                 const isPass = ['A+', 'A0', 'B+', 'B0', 'C+', 'C0', 'D+', 'D0', 'P'].includes(grade);
