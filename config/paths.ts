@@ -4,6 +4,7 @@ const appDirectory = process.cwd();
 const resolveApp = (relativePath: string) => path.resolve(appDirectory, relativePath);
 
 interface Paths {
+  appDev: string;
   appDist: string;
   appSrc: string;
   appHeaders: string;
@@ -12,6 +13,7 @@ interface Paths {
 }
 
 const paths: Paths = {
+  appDev: resolveApp('dev'),
   appDist: resolveApp('dist'),
   appSrc: resolveApp('src'),
   appHeaders: resolveApp('config/headers.json'),
