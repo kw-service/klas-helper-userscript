@@ -78,15 +78,17 @@ export default () => {
         </div>
         <table id="yes-deadline" style="width: 100%">
           <colgroup>
-            <col width="30%">
-            <col width="35%">
-            <col width="35%">
+            <col width="21%">
+            <col width="25%">
+            <col width="25%">
+            <col width="25%">
           </colgroup>
           <thead>
             <tr style="border-bottom: 1px solid #dce3eb; font-weight: bold; height: 30px">
               <td></td>
               <td>온라인 강의</td>
               <td>과제</td>
+              <td>팀 프로젝트</td>
             </tr>
           </thead>
           <tbody></tbody>
@@ -118,6 +120,11 @@ export default () => {
             remainingTime: Infinity,
             remainingCount: 0,
             totalCount: 0
+          },
+          teamProject: {
+            remainingTime: Infinity,
+            remainingCount: 0,
+            totalCount: 0
           }
         };
 
@@ -130,6 +137,13 @@ export default () => {
 
         // 과제를 가져올 주소 설정
         promises.push(axios.post('/std/lis/evltn/TaskStdList.do', {
+          selectSubj: subject.subj,
+          selectYearhakgi: subject.yearhakgi,
+          selectChangeYn: 'Y'
+        }));
+
+        // 팀 프로젝트를 가져올 주소 설정
+        promises.push(axios.post('/std/lis/evltn/PrjctStdList.do', {
           selectSubj: subject.subj,
           selectYearhakgi: subject.yearhakgi,
           selectChangeYn: 'Y'
@@ -165,8 +179,13 @@ export default () => {
         }
       };
 
-      // 과제 파싱 함수
-      const parseHomework = (subjectCode, responseData) => {
+      /**
+       * 과제 파싱 함수
+       * @param {String} subjectCode
+       * @param {Object} responseData
+       * @param {String} homeworkType  HW(Personal Homework), TP(Team Project)
+       */
+      const parseHomework = (subjectCode, responseData, homeworkType='HW') => {
         const nowDate = new Date();
 
         for (const homework of responseData) {
@@ -191,15 +210,28 @@ export default () => {
             }
           }
 
-          if (deadline[subjectCode].homework.remainingTime > hourGap) {
-            deadline[subjectCode].homework.remainingTime = hourGap;
-            deadline[subjectCode].homework.remainingCount = 1;
-          }
-          else if (deadline[subjectCode].homework.remainingTime === hourGap) {
-            deadline[subjectCode].homework.remainingCount++;
-          }
+          if (homeworkType === 'HW') {
+            if (deadline[subjectCode].homework.remainingTime > hourGap) {
+              deadline[subjectCode].homework.remainingTime = hourGap;
+              deadline[subjectCode].homework.remainingCount = 1;
+            }
+            else if (deadline[subjectCode].homework.remainingTime === hourGap) {
+              deadline[subjectCode].homework.remainingCount++;
+            }
 
-          deadline[subjectCode].homework.totalCount++;
+            deadline[subjectCode].homework.totalCount++;
+          }
+          else if (homeworkType === 'TP') {
+            if (deadline[subjectCode].teamProject.remainingTime > hourGap) {
+              deadline[subjectCode].teamProject.remainingTime = hourGap;
+              deadline[subjectCode].teamProject.remainingCount = 1;
+            }
+            else if (deadline[subjectCode].teamProject.remainingTime === hourGap) {
+              deadline[subjectCode].teamProject.remainingCount++;
+            }
+
+            deadline[subjectCode].teamProject.totalCount++;
+          }
           isExistDeadline = true;
         }
       };
@@ -215,7 +247,11 @@ export default () => {
               break;
 
             case '/std/lis/evltn/TaskStdList.do':
-              parseHomework(subjectCode, response.data);
+              parseHomework(subjectCode, response.data, 'HW');
+              break;
+
+            case '/std/lis/evltn/PrjctStdList.do':
+              parseHomework(subjectCode, response.data, 'TP');
               break;
           }
         }
@@ -277,6 +313,11 @@ export default () => {
             <td>
               <span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/TaskStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
                 ${createContent('과제', cur.homework)}
+              <span>
+            </td>
+            <td>
+              <span style="cursor: pointer" onclick="appModule.goLctrumBoard('/std/lis/evltn/PrjctStdPage.do', '${cur.yearSemester}', '${cur.subjectCode}')">
+                ${createContent('팀 프로젝트', cur.teamProject)}
               <span>
             </td>
           </tr>
