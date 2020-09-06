@@ -143,7 +143,7 @@ export default () => {
         }));
 
         // 팀 프로젝트를 가져올 주소 설정
-        promises.push(axios.post('/std/lis/evltn/PrjctStdPage.do', {
+        promises.push(axios.post('/std/lis/evltn/PrjctStdList.do', {
           selectSubj: subject.subj,
           selectYearhakgi: subject.yearhakgi,
           selectChangeYn: 'Y'
@@ -250,7 +250,7 @@ export default () => {
               parseHomework(subjectCode, response.data, 'HW');
               break;
 
-            case '/std/lis/evltn/PrjctStdPage.do':
+            case '/std/lis/evltn/PrjctStdList.do':
               parseHomework(subjectCode, response.data, 'TP');
               break;
           }
