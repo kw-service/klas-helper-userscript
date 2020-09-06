@@ -4,10 +4,12 @@
   "description": "광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트",
   "main": "src/main.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.ts --progress",
-    "build": "cross-env NODE_ENV=production webpack --config config/webpack.config.ts --progress",
+    "dev:build": "cross-env NODE_ENV=development webpack --config config/webpack.config.ts --config-name userscript --progress",
+    "dev:start": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.ts --config-name main --host 0.0.0.0 --watch-poll",
+    "dev": "npm run dev:build && npm run dev:start",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "build": "cross-env NODE_ENV=production webpack --config config/webpack.config.ts --progress"
   },
   "repository": {
     "type": "git",
