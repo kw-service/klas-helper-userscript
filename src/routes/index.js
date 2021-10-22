@@ -7,6 +7,7 @@ import handleLectureHome from './lecture-home';
 import handleEvaluation from './evaluation';
 import handleOnlineLecture from './online-lecture';
 import handleTakeLecture from './take-lecture';
+import handleLenturePlan from './lecture-plan-std';
 
 export default {
   '/std/cmn/frame/Frame.do': handleHome,
@@ -17,5 +18,6 @@ export default {
   '/std/lis/evltn/LctrumHomeStdPage.do': handleLectureHome,
   '/std/cps/inqire/LctreEvlViewStdPage.do': handleEvaluation,
   '/std/lis/evltn/OnlineCntntsStdPage.do': handleOnlineLecture,
-  '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do': handleTakeLecture
+  '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do': handleTakeLecture,
+  '/std/cps/atnlc/popup/LectrePlanStdNumPopup.do': handleLenturePlan
 };
