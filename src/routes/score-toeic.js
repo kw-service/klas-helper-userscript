@@ -19,13 +19,13 @@ const handleCalculateToeic = () => {
   const ieltsData = [];
   const tepsData = [];
   const languageData = [
-    { title: "TOEIC", borderColor:'#EB373D', data: toeicData },
-    { title: "TOPEL", borderColor:'#22F0A9', data: topelData },
-    { title: "TOPIK", borderColor:'#117FFF', data: topikData },
-    { title: "TOEIC Speaking", borderColor:'#813BEB', data: toeicSpeakingData },
-    { title: "OPIC", borderColor:'#FF2E92', data: opicData },
-    { title: "IELTS", borderColor:'#37F05C', data: ieltsData },
-    { title: "TEPS", borderColor:'#FF9864', data: tepsData }
+    { title: "TOEIC", borderColor:'#EB373D', data: toeicData, meta:["score1", "score2"] },
+    { title: "TOPEL", borderColor:'#22F0A9', data: topelData, meta:["score3"] },
+    { title: "TOPIK", borderColor:'#117FFF', data: topikData, meta:["scoreD"] },
+    { title: "TOEIC Speaking", borderColor:'#813BEB', data: toeicSpeakingData, meta:["score4"] },
+    { title: "OPIC", borderColor:'#FF2E92', data: opicData, meta:["score5"] },
+    { title: "IELTS", borderColor:'#37F05C', data: ieltsData, meta:["score6"] },
+    { title: "TEPS", borderColor:'#FF9864', data: tepsData, meta:["score7"] }
   ];
   const scoreDatas = appModule.$data.list;
   const chartSettings = {
@@ -39,56 +39,17 @@ const handleCalculateToeic = () => {
   // 평점 계산을 위한 데이터 생성
   for (let i = scoreDatas.length - 1; i >= 0; i--) {
     const scoreData = scoreDatas[i];
-    if (scoreData.score1 && scoreData.score1 !== "-") {
-      toeicData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score1,
-      })
-    }
-    if (scoreData.score2 && scoreData.score2 !== "-") {
-      toeicData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score2,
-      })
-    }
-    if (scoreData.score3 && scoreData.score3 !== "-") {
-      topelData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score3,
-      })
-    }
-    if (scoreData.score4 && scoreData.score4 !== "-") {
-      toeicSpeakingData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score4,
-      })
-    }
-    if (scoreData.score5 && scoreData.score5 !== "-") {
-      opicData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score5,
-      })
-    }
-    if (scoreData.score6 && scoreData.score6 !== "-") {
-      ieltsData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score6,
-      })
-    }
-    if (scoreData.score7 && scoreData.score7 !== "-") {
-      ieltsData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.score7,
-      })
-    }
-    if (scoreData.scoreD && scoreData.scoreD !== "-") {
-      topikData.push({
-        testDate: scoreData.testDate,
-        score: scoreData.scoreD,
-      })
+    for (const language of languageData) {
+      for (const metadata of language.meta) {
+        if (scoreData[metadata] && scoreData[metadata] !== "-") {
+          language.data.push({
+            testDate: scoreData.testDate,
+            score: scoreData[metadata],
+          });
+        }
+      }
     }
   }
-  
 
   // 차트 렌더링
   for (let i = languageData.length - 1; i >= 0; i--) {
