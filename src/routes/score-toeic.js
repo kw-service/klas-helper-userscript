@@ -6,9 +6,6 @@
 import {
   addListenerByTimer
 } from '../utils/dom';
-import {
-  calculateGPA
-} from '../utils/score';
 
 const handleCalculateToeic = () => {
   const toeicData = [];
@@ -34,7 +31,7 @@ const handleCalculateToeic = () => {
     lineTension: 0,
     pointBackgroundColor: 'white',
     pointRadius: 5
-  }
+  };
 
   // 평점 계산을 위한 데이터 생성
   for (let i = scoreDatas.length - 1; i >= 0; i--) {
@@ -76,7 +73,7 @@ const handleCalculateToeic = () => {
           borderColor: languageItem.borderColor,
           ...chartSettings
         }
-      ]
+        ]
       },
       options: {
         responsive: true,

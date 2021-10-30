@@ -13,6 +13,7 @@ const lectureEndTime = {
   5: '16:15', 6: '17:45', 7: '18:45', 8: '19:35', 9: '20:25',
   10: '21:15', 11: '22:05'
 };
+
 const handleTimeTable = () => {
   const timeTable = appModule.$data.timeTableList;
   const lectureList = [];
@@ -32,13 +33,13 @@ const handleTimeTable = () => {
       }
     }
   }
+  
   // 파싱한 데이터를 통해 표에 그려진 값을 찾아가고, 거기에 시간을 추가합니다.
   for (const item of lectureList) {
     const subjPrintSeq = item.subjPrintSeq;
     const startTime = item.startTime;
     const className = '.namecol' + String(subjPrintSeq).padStart(2,'0');
-        
-    console.log(item);
+  
     $(className).each(function(idx, element) {
       const endTime = startTime + parseInt($(element).attr('class').split('lessontime')[1]) - 1;
       const currentLectureTime = parseInt($(element).closest('tr').eq(0).find('.time').eq(0).text());
