@@ -7,6 +7,9 @@
     "dev:build": "cross-env NODE_ENV=development webpack --config config/webpack.config.ts --config-name userscript --progress",
     "dev:start": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.ts --config-name main --host 0.0.0.0 --watch-poll",
     "dev": "npm run dev:build && npm run dev:start",
+    "ext:build": "cross-env NODE_ENV=development webpack --config config/webpack.config.ts --config-name userscript --progress",
+    "ext:start": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.ts --config-name main-ext --host 0.0.0.0 --watch-poll",
+    "ext": "npm run ext:build && npm run ext:start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.config.ts --progress"

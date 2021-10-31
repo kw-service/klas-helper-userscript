@@ -72,4 +72,14 @@ const mainConfig: webpack.Configuration = {
   ...commonConfig
 };
 
-export default [userscriptConfig, mainConfig];
+const mainExtConfig: webpack.Configuration = {
+  name: 'main-ext',
+  entry: paths.appExtMain,
+  output: {
+    filename: 'main-ext.js',
+    path: paths.appDist
+  },
+  ...commonConfig
+};
+
+export default [userscriptConfig, mainConfig, mainExtConfig];

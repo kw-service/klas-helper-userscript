@@ -9,6 +9,7 @@ interface Paths {
   appSrc: string;
   appUserscript: string;
   appMain: string;
+  appExtMain: string;
 }
 
 const paths: Paths = {
@@ -16,7 +17,8 @@ const paths: Paths = {
   appDist: resolveApp('dist'),
   appSrc: resolveApp('src'),
   appUserscript: resolveApp('src/klas-helper.user.js'),
-  appMain: resolveApp('src/main.js')
+  appMain: resolveApp('src/main.js'),
+  appExtMain: resolveApp('src/main-ext.js')
 };
 
 export default paths;
