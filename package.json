@@ -1,6 +1,6 @@
 {
   "name": "klas-helper",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트",
   "main": "src/main.js",
   "scripts": {
