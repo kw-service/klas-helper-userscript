@@ -8,6 +8,7 @@ import handleTimeTable from './timetable';
 export default () => {
   // 타임테이블 시간 그리기
   handleTimeTable();
+  document.querySelector('.scheduletitle > select').addEventListener("change", handleTimeTable);
  
   // 기말 평가 안내문 표시
   (async () => {

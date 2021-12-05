@@ -45,7 +45,7 @@ const handleTimeTable = () => {
       const currentLectureTime = parseInt($(element).closest('tr').eq(0).find('.time').eq(0).text());
       // 이미 시간이 그려진 강의이거나, 해당되는 강의 시간이 아니라면 그냥 넘어갑니다.
       if ($(element).find("span").length > 0 || currentLectureTime !== startTime) {
-        return;
+        $(element).find("span").remove();
       }
       $(element).append(
         `<span class="time">${lectureStartTime[startTime]} ~ ${lectureEndTime[endTime]}</span>`
@@ -55,4 +55,4 @@ const handleTimeTable = () => {
   }
 };
 
-export default () => { setTimeout(handleTimeTable, 1000); };
+export default () => { setTimeout(handleTimeTable, 700); };
