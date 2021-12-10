@@ -24,11 +24,13 @@ const handleTimeTable = () => {
       const subjNm = item[`wtSubjNm_${i}`];
       const subjPrintSeq = item[`wtSubjPrintSeq_${i}`];
       const startTime = item[`wtTime`]; // 시작시간
+      const spanTime = item[`wtSpan_${i}`]; // 강의시간
       if (subjNm !== undefined) {
         lectureList.push({
           subjNm,
           subjPrintSeq,
-          startTime
+          startTime,
+          spanTime
         });
       }
     }
@@ -38,18 +40,23 @@ const handleTimeTable = () => {
   for (const item of lectureList) {
     const subjPrintSeq = item.subjPrintSeq;
     const startTime = item.startTime;
+    const spanTime = item.spanTime;
     const className = '.namecol' + String(subjPrintSeq).padStart(2,'0');
   
     $(className).each(function(idx, element) {
       const endTime = startTime + parseInt($(element).attr('class').split('lessontime')[1]) - 1;
       const currentLectureTime = parseInt($(element).closest('tr').eq(0).find('.time').eq(0).text());
+      
       // 이미 시간이 그려진 강의이거나, 해당되는 강의 시간이 아니라면 그냥 넘어갑니다.
       if ($(element).find("span").length > 0 || currentLectureTime !== startTime) {
         $(element).find("span").remove();
       }
-      $(element).append(
-        `<span class="time">${lectureStartTime[startTime]} ~ ${lectureEndTime[endTime]}</span>`
-      );
+      
+      if (currentLectureTime !== 30) {
+        $(element).append(
+          `<span class="time">${lectureStartTime[currentLectureTime]} ~ ${lectureEndTime[currentLectureTime+spanTime-1]}</span>`
+        );
+      }
     });
         
   }
