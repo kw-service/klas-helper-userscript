@@ -1,10 +1,6 @@
 {
   "name": "klas-helper",
-<<<<<<< HEAD
-  "version": "2.2.2",
-=======
-  "version": "2.2.1",
->>>>>>> b6dd733b87afe035832cb4350ba16f2e89cd1c63
+  "version": "2.2.3",
   "description": "광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트",
   "main": "src/main.js",
   "scripts": {
@@ -20,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nbsp1221/klas-helper.git"
+    "url": "git+https://github.com/klas-helper/klas-helper.git"
   },
   "author": "nbsp1221",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nbsp1221/klas-helper/issues"
+    "url": "https://github.com/klas-halper/klas-helper/issues"
   },
-  "homepage": "https://github.com/nbsp1221/klas-helper#readme",
+  "homepage": "https://github.com/klas-halper/klas-helper#readme",
   "devDependencies": {
     "@babel/core": "^7.11.4",
     "@babel/preset-env": "^7.11.0",
