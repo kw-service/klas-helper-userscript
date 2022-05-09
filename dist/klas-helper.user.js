@@ -1,18 +1,18 @@
 // ==UserScript==
-// @name         KLAS Helper
-// @namespace    https://github.com/nbsp1221
-// @version      2.2.0
-// @description  광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
-// @match        https://klas.kw.ac.kr/*
-// @run-at       document-start
-// @homepageURL  https://github.com/nbsp1221/klas-helper
-// @supportURL   https://github.com/nbsp1221/klas-helper/issues
-// @updateURL    https://openuserjs.org/meta/nbsp1221/KLAS_Helper.meta.js
-// @downloadURL  https://openuserjs.org/install/nbsp1221/KLAS_Helper.user.js
-// @author       nbsp1221
-// @copyright    2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
-// @license      MIT
-// @grant        GM.xmlHttpRequest
+// @name        KLAS Helper
+// @version     2.3.0
+// @author      nbsp1221
+// @description 광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
+// @homepage    https://github.com/klas-halper/klas-helper#readme
+// @supportURL  https://github.com/klas-halper/klas-helper/issues
+// @match       https://klas.kw.ac.kr/*
+// @namespace   https://github.com/nbsp1221
+// @updateURL   https://openuserjs.org/meta/nbsp1221/KLAS_Helper.meta.js
+// @downloadURL https://openuserjs.org/install/nbsp1221/KLAS_Helper.user.js
+// @grant       GM.xmlHttpRequest
+// @copyright   2020, nbsp1221 (https://openuserjs.org/users/nbsp1221)
+// @license     MIT
+// @run-at      document-start
 // ==/UserScript==
 
 // JavaScript 파일 캐시 문제 해결
@@ -28,7 +28,7 @@ function jsCache(filePath) {
 	// 메인 파일 삽입
 	// 업데이트 시 즉각적으로 업데이트를 반영하기 위해 이러한 방식을 사용함
 	const scriptElement = document.createElement('script');
-	scriptElement.src = jsCache('https://nbsp1221.github.io/klas-helper/dist/main.js');
+	scriptElement.src = jsCache('https://klas-helper.github.io/klas-helper/dist/main.js');
 	document.head.appendChild(scriptElement);
 
 	// window.onload 설정
