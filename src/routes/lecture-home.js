@@ -3,6 +3,57 @@
  * 페이지 주소: https://klas.kw.ac.kr/std/lis/evltn/LctrumHomeStdPage.do
  */
 
+// 강의 묻고답하기, 강의 공지사항 추가
+const addBoard = async() => {
+  const selectedSubj = $("input[name='selectedSubj']").val();
+  const questionBoardUid = $("a[onclick*='BoardQnaListStdPage.do']").attr("onclick").split("linkUrl('/std/lis/sport/")[1].split("/")[0];
+  const selectedYearhakgi = $("input[name='selectedYearhakgi']").val();
+  let boardCount = 0;
+  let isNew = false;
+  const response = await axios.post(`/std/lis/sport/${questionBoardUid}/BoardStdList.do`, {
+    "cmd": null,
+    "pageInit": true,
+    "selectYearhakgi": selectedYearhakgi,
+    "selectSubj": selectedSubj,
+    "selectChangeYn": "Y",
+    "searchCondition": "ALL",
+    "searchKeyword": "",
+    "currentPage": 0,
+  })
+  const data = response.data;
+  const totalPages = data.page.totalPages;
+  const latestWrite = data.list.length > 0 ? new Date(data.list[0].registDt) : new Date(0, 0, 0);
+  const today = new Date();
+  // 1일 이내의 게시글이 있다면 새로운 게시글이 있다고 알림
+  if ((today - latestWrite) < 1000 * 60 * 60 * 24) {
+    isNew = true;
+  }
+  for (let i = 0; i < totalPages; i++) {
+    const response = await axios.post(`/std/lis/sport/${questionBoardUid}/BoardStdList.do`, {
+      "cmd": null,
+      "pageInit": true,
+      "selectYearhakgi": selectedYearhakgi,
+      "selectSubj": selectedSubj,
+      "selectChangeYn": "Y",
+      "searchCondition": "ALL",
+      "searchKeyword": "",
+      "currentPage": i,
+    })
+    const data = response.data;
+    boardCount += data.list.length;
+  }
+  if ($(".custom-boardcount").length > 0) {
+    $(".custom-boardcount").text(boardCount);
+  } else {
+    $($(".subjectpresent")[0]).append(`
+      <li><a href="#" onclick="linkUrl('/std/lis/sport/573f918c23984ae8a88c398051bb1263/BoardQnaListStdPage.do');">강의 묻고답하기${
+        isNew ? ` <img v-if="prjctNewCnt > 0" src="/assets/modules/std/images/common/icon-new.png"> ` : ""
+      } <!----><span class="oval custom-boardcount">${boardCount}</span></a></li>
+    `)
+  }
+};
+
+
 export default () => {
   // 인증 팝업 무시
   lrnCerti.certiCheck = function (grcode, subj, year, hakgi, bunban, module, lesson, oid, starting, contentsType, weeklyseq, weeklysubseq, width, height, today, sdate, edate, ptype, totalTime, prog, gubun) {
@@ -71,5 +122,10 @@ export default () => {
   $("select[name='selectSubj']").change(() => {
     appModule.origin = undefined;
     $('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
+    setTimeout(addBoard, 0);
+    
   });
+
+  addBoard()  
+  
 };
