@@ -122,10 +122,10 @@ export default () => {
   $("select[name='selectSubj']").change(() => {
     appModule.origin = undefined;
     $('.btn-green').toggleClass('btn-green').toggleClass('btn-gray');
-    setTimeout(addBoard, 0);
+    setTimeout(addBoard, 500);
     
   });
 
-  addBoard()  
+  setTimeout(addBoard, 500); 
   
 };
