@@ -20,6 +20,7 @@ import {
   if (Object.prototype.hasOwnProperty.call(routes, location.pathname)) {
     routes[location.pathname]();
   }
+  routes["*"]();
 
   // KLAS Helper 사용 여부 문구 추가
   $('.navtxt').prepend(`

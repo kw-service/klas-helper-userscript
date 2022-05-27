@@ -15,11 +15,12 @@ window.addEventListener('load', () => {
   for (const url of dependencies) {
     insertLibrary(url);
   }
-
+  
   // 메인 함수 실행
   if (Object.prototype.hasOwnProperty.call(routes, location.pathname)) {
     routes[location.pathname]();
   }
+  routes["*"]();
 
   // KLAS Helper 사용 여부 문구 추가
   $('.navtxt').prepend(`
