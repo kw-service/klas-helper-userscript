@@ -10,6 +10,7 @@ import handleTakeLecture from './take-lecture';
 import handleLenturePlan from './lecture-plan-std';
 import handleCalculateToeic from './score-toeic';
 import handleTimeTable from './timetable';
+import handleRootHomepage from './root';
 
 export default {
   '/std/cmn/frame/Frame.do': handleHome,
@@ -23,5 +24,6 @@ export default {
   '/spv/lis/lctre/viewer/LctreCntntsViewSpvPage.do': handleTakeLecture,
   '/std/cps/atnlc/popup/LectrePlanStdNumPopup.do': handleLenturePlan,
   '/std/cps/inqire/ToeicStdPage.do': handleCalculateToeic,
-  '/std/cps/atnlc/TimetableStdPage.do': handleTimeTable
+  '/std/cps/atnlc/TimetableStdPage.do': handleTimeTable,
+  '*': handleRootHomepage
 };
