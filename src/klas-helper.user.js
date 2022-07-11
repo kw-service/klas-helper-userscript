@@ -4,7 +4,7 @@ import {
 } from './utils/dom';
 
 const mainURL = isEnvProduction
-  ? 'https://nbsp1221.github.io/klas-helper/dist/main.js'
+  ? 'https://klas-helper.github.io/distribution/main.js'
   : 'http://localhost:8080/main.js';
 
 // 메인 파일 삽입
