@@ -46,10 +46,11 @@ const handleTimeTable = () => {
     $(className).each(function(idx, element) {
       const endTime = startTime + parseInt($(element).attr('class').split('lessontime')[1]) - 1;
       const currentLectureTime = parseInt($(element).closest('tr').eq(0).find('.time').eq(0).text());
-      
+      console.log($(element)[0].innerText, endTime, currentLectureTime)
       // 이미 시간이 그려진 강의이거나, 해당되는 강의 시간이 아니라면 그냥 넘어갑니다.
       if ($(element).find("span").length > 0 || currentLectureTime !== startTime) {
-        $(element).find("span").remove();
+        // $(element).find("span").remove();
+        return;
       }
       
       if (currentLectureTime !== 30) {
