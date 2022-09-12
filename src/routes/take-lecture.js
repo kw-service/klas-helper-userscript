@@ -14,7 +14,7 @@ export default () => {
         <p><kbd>M</kbd> : <strong>음소거 설정 / 해제</strong></p>
         <p><kbd>Backspace</kbd> <kbd>P</kbd> : <strong>페이지 단위로 이동 (이전 페이지)</strong></p>
         <p><kbd>N</kbd> : <strong>페이지 단위로 이동 (다음 페이지)</strong></p>
-        <p><kbd>X</kbd> <kbd>C</kbd> : <strong>0.2 단위로 배속 조절</strong></p>
+        <p><kbd>X</kbd> <kbd>C</kbd> : <strong>0.1 단위로 배속 조절</strong></p>
         <p><kbd>Z</kbd> : <strong>1.0 배속으로 초기화</strong></p>
       </div>
     `);
