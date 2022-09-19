@@ -19,7 +19,7 @@ const addBoard = async() => {
     "searchCondition": "ALL",
     "searchKeyword": "",
     "currentPage": 0,
-  })
+  });
   const data = response.data;
   const totalPages = data.page.totalPages;
   const latestWrite = data.list.length > 0 ? new Date(data.list[0].registDt) : new Date(0, 0, 0);
@@ -49,8 +49,23 @@ const addBoard = async() => {
       <li><a href="#" onclick="linkUrl('/std/lis/sport/573f918c23984ae8a88c398051bb1263/BoardQnaListStdPage.do');">강의 묻고답하기${
         isNew ? ` <img v-if="prjctNewCnt > 0" src="/assets/modules/std/images/common/icon-new.png"> ` : ""
       } <!----><span class="oval custom-boardcount">${boardCount}</span></a></li>
-    `)
+    `);
   }
+};
+
+// 강의계획서 조회 버튼 추가
+const addLecturePlan = async() => {
+  const redirectLectureHandler = async() => {
+    const selectedSubj = $("input[name='selectedSubj']").val();
+    window.open('https://klas.kw.ac.kr/std/cps/atnlc/popup/LectrePlanStdView.do?selectSubj=' + selectedSubj, '', 'width=1000, height=800, scrollbars=yes, title=강의계획서 조회');
+  };
+  const lectureElem = $(`<span class="subjectLectureInfo">강의계획서 조회</span>`);
+  // set style
+  lectureElem.css({
+    "margin-left": "15px",
+  });
+  lectureElem.click(redirectLectureHandler);
+  $(".subtitle").append(lectureElem);
 };
 
 
@@ -126,6 +141,6 @@ export default () => {
     
   });
 
+  addLecturePlan();
   setTimeout(addBoard, 500); 
-  
 };
