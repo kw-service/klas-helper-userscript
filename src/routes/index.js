@@ -11,7 +11,7 @@ import handleLenturePlan from './lecture-plan-std';
 import handleCalculateToeic from './score-toeic';
 import handleTimeTable from './timetable';
 import handleRootHomepage from './root';
-
+import handleLogin from './login';
 export default {
   '/std/cmn/frame/Frame.do': handleHome,
   '/std/cps/atnlc/LectrePlanStdPage.do': handleSyllabus,
@@ -25,5 +25,6 @@ export default {
   '/std/cps/atnlc/popup/LectrePlanStdNumPopup.do': handleLenturePlan,
   '/std/cps/inqire/ToeicStdPage.do': handleCalculateToeic,
   '/std/cps/atnlc/TimetableStdPage.do': handleTimeTable,
+  '/usr/cmn/login/LoginForm.do': handleLogin,
   '*': handleRootHomepage
 };
