@@ -4,6 +4,14 @@
  * 주의사항 : 이 파일의 스크립트는 klas.kw.ac.kr 도메인의 모든 사이트에 적용되므로 조건을 잘 체크해주세요.
  */
 
+const renewSession = () => {
+  // Call extern function
+  // The extern function defines in HTML
+  sessionExtensionCall();
+  return;
+}
+
+
 export default () => {
   // 학번의 학과 번호별로 DB 저장
   const colleageDB = {
@@ -44,6 +52,17 @@ export default () => {
     510: { 'colleage': '경영대학', 'major': '국제통상학부', 'colleageHomepage': "http://biz.kw.ac.kr/", 'majorHomepage': "https://biz.kw.ac.kr/" },
 
   }
+
+  // Set interval to renew session
+  setInterval(renewSession, 1000 * 60 * 5);
+  // Delete session element
+  $(".toplogo").css({ "max-width": "30%" })
+  $(".navtxt").css({ "max-width": "70%", "min-width": "70%" })
+  $("#remainingCounter").after($(`<span style="">자동 세션 갱신 중(실험적)</span>`))
+  $("#remainingCounter").remove();
+
+  $(".fa-retweet").parent().remove();
+
   const topMenu = $(".topmenutxt");
   
   if (topMenu) {
