@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        KLAS Helper
-// @version     2.5.2
+// @version     2.5.3
 // @author      nbsp1221, mirusu400
 // @description 광운대학교 KLAS 사이트에 편리한 기능을 추가할 수 있는 유저 스크립트
 // @homepage    https://github.com/klas-halper/klas-helper#readme
