@@ -58,7 +58,7 @@ export default () => {
   // Delete session element
   $(".toplogo").css({ "max-width": "30%" })
   $(".navtxt").css({ "max-width": "70%", "min-width": "70%" })
-  $("#remainingCounter").after($(`<span style="">자동 세션 갱신 중(실험적)</span>`))
+  $("#remainingCounter").after($(`<span style="">자동 세션 갱신 중</span>`))
   $("#remainingCounter").remove();
 
   $(".fa-retweet").parent().remove();
