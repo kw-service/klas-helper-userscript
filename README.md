@@ -1,3 +1,11 @@
+# ⚠️ DEPRECATED ⚠️
+
+👉 [**새 저장소로 이동**](https://github.com/klas-helper/klas-helper-extension)
+
+KLAS Helper가 확장 플러그인 방식으로 완전히 옮겨감에 따라 이 저장소는 2023년 4월 15일 이후로 archived 처리되어 더 이상 관리되지 않습니다.
+
+---
+
 # 🎠 KLAS Helper
 
 [Korean](https://github.com/nbsp1221/klas-helper) | [English](https://github.com/nbsp1221/klas-helper/blob/master/README-EN.md)
